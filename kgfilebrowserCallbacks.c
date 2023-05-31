@@ -26,7 +26,7 @@ int RunkgPopUpMenu(void *arg,int xo,int yo,char **menu);
 
 char *FMenu1[8]={"Copy selected files","Move selected files","Selected files to Trash","Delete selected files","Rename this","Backup this","Close",NULL};
 char *FMenu2[8]={"Copy selected files","Move selected files","Selected files to Trash","Delete selected files","Close",NULL};
-char *DMenu1[5]= {"Backup","Rename","Make new folder","Close",NULL};
+char *DMenu1[5]= {"Make new folder","Backup","Rename","Close",NULL};
 char *DMenu2[5]= {"Make new folder","Close",NULL};
 #define kgFree(pt) {if(pt!=NULL) free(pt);pt=NULL;}
 #define CHECKDELETESAME {\
@@ -78,8 +78,58 @@ char *DMenu2[5]= {"Make new folder","Close",NULL};
 		 } \
 	 } \
 }
-
-
+#define ProcessRename(Folder,W) {\
+  sprintf(fname,"%-s/%-s",Folder,Th->name); \
+  strcpy(from,Th->name); \
+  sprintf(job,"New name for %-s ",Th->name); \
+  strcat(job,"%30s"); \
+  strcpy(to,Th->name); \
+  gscanf(Tmp,job,to); \
+  sprintf(job,"rename %-s %-s %-s",Th->name,to,fname); \
+  system(job); \
+  sprintf(fname,"%-s/%-s",Folder,to); \
+  if(kgCheckFileType(fname)!= NULL) { \
+    free(Th->name); \
+    kgSetThumbNailName(W,item,to); \
+    printf("New Name: %s\n",Th->name); \
+    if(same) {\
+  	  void *Owid=NULL; \
+  	  ThumbNail *Oth=NULL;\
+          char *wname=NULL;\
+	  wname = kgGetWidgetName(Tmp,kgGetWidgetId(Tmp,W));\
+  	  if(strcmp(wname,"Xbox1")==0) {  Owid =X2; }\
+	    else if(strcmp(wname,"Xbox2")==0) {  Owid =X1; }\
+	         else if(strcmp(wname,"Ybox1")==0) {  Owid =Y2; }\
+  	              else if(strcmp(wname,"Ybox2")==0) {  Owid =Y1; }\
+  	  Oth= (ThumbNail *)kgGetThumbNail(Owid,item);\
+          free(Oth->name); \
+          kgSetThumbNailName(Owid,item,to); \
+          kgSortList(Owid); \
+          kgUpdateWidget(Owid);\
+    }\
+    kgSortList(W); \
+    kgUpdateWidget(W);\
+    kgUpdateOn(Tmp);\
+  }\
+}
+#define ProcessOtherButtonClick(W,Menu1,Menu2) {\
+		  rval =-1; \
+		  printf("Otherbutton on Xbox1\n"); \
+		  kgGetClickedPosition(Tmp,&x,&y); \
+		  item = kgGetThumbNailItem(W,x,y); \
+		  List=(ThumbNail **)kgGetList(W); \
+		  xpos = x; \
+		  ypos = y; \
+		  if(ypos >(yl-250) )ypos= yl-250; \
+		  if(xpos >(xl-250) )xpos= xl-250; \
+		  if(item>= 0)  { \
+		    Th= (ThumbNail *)List[item]; \
+		    rval = RunkgPopUpMenu(Tmp,xpos,ypos,Menu1); \
+		    printf("Name = %s\n",Th->name); \
+		  } \
+		  else rval = RunkgPopUpMenu(Tmp,x,y,Menu2); \
+		  printf("Rval = %d\n",rval); \
+}
 static char *MakeFileToken(char *src,char *check,char *token) {
 	char *ret=NULL;
 	char *pt;
@@ -1015,100 +1065,65 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
   KBEVENT *kbe;
   void *wid;
   DIT *dest;
-  int x,y,yl,xpos,ypos;
+  int x,y,xl,yl,xpos,ypos;
+  int same=0;
   char from[300],to[300],fname[300];
   char job[500];
+  int rval=-1;
   D = (DIALOG *)Tmp;
   kbe = (KBEVENT *)tmp;
   yl = D->yl;
+  xl = D->xl;
+  if(strcmp(Folder1,Folder2)==0) same=1;
 
 #if 1
   if((kbe->event ==1)||(kbe->event == 3)) {
-	  ThumbNail *Th=NULL;
-	  ThumbNail **List=NULL;
+    ThumbNail *Th=NULL;
+    ThumbNail **List=NULL;
     if(kbe->button !=1) {
 	  int item=-1;
 	  wid = kgGetClickedWidget(Tmp);
 
 	  if(kgCheckWidgetName(wid,"Xbox1")) {
-		  int rval=-1;
-			  printf("Otherbutton on Xbox1\n");
-			  kgGetClickedPosition(Tmp,&x,&y);
-			  item = kgGetThumbNailItem(X1,x,y);
-			  List=(ThumbNail **)kgGetList(X1);
-			  if(item>= 0)  {
-			    Th= (ThumbNail *)List[item];
-			    rval = RunkgPopUpMenu(Tmp,x,y,DMenu1);
-			    printf("Name = %s\n",Th->name);
-			  }
-			  else rval = RunkgPopUpMenu(Tmp,x,y,DMenu2);
-			  printf("Rval = %d\n",rval);
+		  ProcessOtherButtonClick(X1,DMenu1,DMenu2);
+		  switch(rval) {
+			  case 3:
+			    ProcessRename(Folder1,X1);
+			    break;
+			  default:
+			    break;
+		  }
 	  }
 	  if(kgCheckWidgetName(wid,"Ybox1")) {
-		  int rval=-1;
-			  printf("Otherbutton on Ybox1\n");
-			  kgGetClickedPosition(Tmp,&x,&y);
-			  item = kgGetThumbNailItem(Y1,x,y);
-			  List=(ThumbNail **)kgGetList(Y1);
-			  ypos = y;
-			  if(ypos >(yl-250) )ypos= yl-250;
-			  if(item>= 0)  {
-			    Th= (ThumbNail *)List[item];
-			    rval = RunkgPopUpMenu(Tmp,x,ypos,FMenu1);
-			    printf("Name = %s\n",Th->name);
-			  }
-			  else rval = RunkgPopUpMenu(Tmp,x,ypos,FMenu2);
-			  printf("Rval = %d\n",rval);
-			  switch(rval) {
-				  case 5:
-					  sprintf(fname,"%-s/%-s",Folder1,Th->name);
-					  strcpy(from,Th->name);
-					  sprintf(job,"New name for %-s ",Th->name);
-					  strcat(job,"%30s");
-					  strcpy(to,Th->name);
-					  gscanf(Tmp,job,to);
-					  sprintf(job,"rename %-s %-s %-s",Th->name,to,fname);
-					  system(job);
-					  free(Th->name);
-					  kgSetThumbNailName(Y1,item,to);
-					  printf("New Name: %s\n",Th->name);
-					  kgSortList(Y1);
-					  kgUpdateWidget(Y1);
-					  kgUpdateOn(Tmp);
-					  break;
-				  default:
-					  break;
-			  }
+	          ProcessOtherButtonClick(Y1,FMenu1,FMenu2);
+		  switch(rval) {
+			  case 5:
+			    ProcessRename(Folder1,Y1);
+			    break;
+			  default:
+			    break;
+		  }
 
 	  }
 	  if(kgCheckWidgetName(wid,"Xbox2")) {
-		  int rval=-1;
-			  printf("Otherbutton on Xbox2\n");
-			  kgGetClickedPosition(Tmp,&x,&y);
-			  item = kgGetThumbNailItem(X2,x,y);
-			  List=(ThumbNail **)kgGetList(X2);
-			  if(item>= 0)  {
-			    Th= (ThumbNail *)List[item];
-			    printf("Name = %s\n",Th->name);
-			    rval = RunkgPopUpMenu(Tmp,X2->x1,y,DMenu1);
-			    printf("Name = %s\n",Th->name);
-			  }
-			  else rval = RunkgPopUpMenu(Tmp,X2->x1,y,DMenu2);
-			  printf("Rval = %d\n",rval);
+		  ProcessOtherButtonClick(X2,DMenu1,DMenu2);
+		  switch(rval) {
+			  case 3:
+			    ProcessRename(Folder2,X2);
+			    break;
+			  default:
+			    break;
+		  }
 	  }
 	  if(kgCheckWidgetName(wid,"Ybox2")) {
-		  int rval=-1;
-			  printf("Otherbutton on Ybox2\n");
-			  kgGetClickedPosition(Tmp,&x,&y);
-			  item = kgGetThumbNailItem(Y2,x,y);
-			  List=(ThumbNail **)kgGetList(Y2);
-			  if(item>= 0)  {
-			    Th= (ThumbNail *)List[item];
-			    rval = RunkgPopUpMenu(Tmp,x,y,FMenu1);
-			    printf("Name = %s\n",Th->name);
-			  }
-			  else rval = RunkgPopUpMenu(Tmp,x,y,FMenu2);
-			  printf("Rval = %d\n",rval);
+	          ProcessOtherButtonClick(Y2,FMenu1,FMenu2);
+		  switch(rval) {
+			  case 5:
+			    ProcessRename(Folder2,Y2);
+			    break;
+			  default:
+			    break;
+		  }
 	  }
     }
   }
