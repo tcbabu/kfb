@@ -1,0 +1,177 @@
+D      //GUI dimensions xo,yo,xl,yl,lw,rw,tw,bw,df,bor_type,bkup
+37 37 1194 765
+4 4 4 4
+10 4 1 0 1 1 0 0 0 0 1 0 0.000000 0 100 100 0
+//Thumbnail Browser
+y
+y     //code
+5 60  //x1,y1
+200 650 //x2,y2
+72 32  //xgap, ygap
+24 //Width 
+4 16  // offset, scroll width 
+2 1 1 1 0 // type,item hight,bordr,bkgr,hide 
+"Xbox1"
+//Thumbnail Browser
+y
+y     //code
+190 60  //x1,y1
+605 650 //x2,y2
+72 44  //xgap, ygap
+48 //Width 
+6 22  // offset, scroll width 
+0 1 1 1 0 // type,item hight,bordr,bkgr,hide 
+"Ybox1"
+//Horiz bar
+h
+h     //code
+1132 14  //x1,y1
+1182 62  //x2,y2
+2 0  //xgap,ygap
+40 //length 
+40 //Width 
+1 1  //Nx,Ny,
+1 //status
+"Quit" //title 
+/usr/share/icons/CratOS_lion-icons/actions/scalable/application-exit.png // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+2 0.500000 0  //type,fac
+0 0 //hide
+"Quit"
+//Thumbnail Browser
+y
+y     //code
+1013 60  //x1,y1
+1184 650 //x2,y2
+72 32  //xgap, ygap
+24 //Width 
+4 16  // offset, scroll width 
+2 1 1 1 0 // type,item hight,bordr,bkgr,hide 
+"Xbox2"
+//Thumbnail Browser
+y
+y     //code
+609 60  //x1,y1
+1012 650 //x2,y2
+72 44  //xgap, ygap
+48 //Width 
+6 22  // offset, scroll width 
+0 1 1 1 0 // type,item hight,bordr,bkgr,hide 
+"Ybox2"
+//Button Box
+n
+n     //code
+13 11  //x1,y1
+105 61  //x2,y2
+2 2  //xgap,ygap
+40 //length 
+40 //Width 
+2 1  //Nx,Ny,
+1 //status
+"Home" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+1 //status
+"Up" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+6 0.150000 0  //type,fac
+0 0 //hide
+"Butbox1"
+//Text Box
+t
+t     //code
+105 21  //x1,y1
+20 //Width 
+1 1  //Nx,Ny,
+//element formats
+"%40s"
+526 54  //x2,y2
+1 1 0 //Cursor Position
+18 9 0 //hide
+"Tbox1"
+//Button Box
+n
+n     //code
+618 6  //x1,y1
+710 56  //x2,y2
+2 2  //xgap,ygap
+40 //length 
+40 //Width 
+2 1  //Nx,Ny,
+1 //status
+"Home" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+1 //status
+"Up" //title 
+NULL // XPM 
+NULL // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+6 0.150000 0  //type,fac
+0 0 //hide
+"Butbox2"
+//Text Box
+t
+t     //code
+710 21  //x1,y1
+20 //Width 
+1 1  //Nx,Ny,
+//element formats
+"%40s"
+1131 54  //x2,y2
+1 1 0 //Cursor Position
+18 9 0 //hide
+"Tbox2"
+//Thumbnail Browser
+y
+y     //code
+116 650  //x1,y1
+1066 758 //x2,y2
+72 44  //xgap, ygap
+48 //Width 
+6 22  // offset, scroll width 
+1 1 1 1 0 // type,item hight,bordr,bkgr,hide 
+"Trash"
+//Button Box
+n
+n     //code
+32 648  //x1,y1
+112 758  //x2,y2
+2 2  //xgap,ygap
+72 //length 
+96 //Width 
+1 1  //Nx,Ny,
+1 //status
+"Trash" //title 
+/usr/share/icons/CratOS_lion-icons/apps/scalable/gnome-fs-trash-empty.png // XPM 
+/usr/share/icons/CratOS_lion-icons/apps/scalable/clanbomber.png // XPM 
+NULL // XPM 
+-1 //back ground color
+ //keyboard code
+5 0.150000 0  //type,fac
+0 0 //hide
+"Trash"
+//Pixmap Box
+p
+p     //code
+1066 649  //x1,y1
+1188 757 //x2,y2
+ // XPM 
+-1   // background color 
+-1 0 // border hide
+"Imagebox"
