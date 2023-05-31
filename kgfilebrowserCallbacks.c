@@ -24,10 +24,10 @@ static ThumbNail **GetFolderThumbNails(char *Folder,int size);
 static ThumbNail **GetFileThumbNails(char *Folder,int size);
 int RunkgPopUpMenu(void *arg,int xo,int yo,char **menu);
 
-char *FMenu1[8]={"Copy selected files","Move selected files","Selected files to Trash","Delete selected files","Rename this","Backup this","Close",NULL};
-char *FMenu2[8]={"Copy selected files","Move selected files","Selected files to Trash","Delete selected files","Close",NULL};
-char *DMenu1[5]= {"Make new folder","Backup","Rename","Close",NULL};
-char *DMenu2[5]= {"Make new folder","Close",NULL};
+char *FMenu1[8]={"Close","Copy selected files","Move selected files","Selected files to Trash","Delete selected files","Rename this","Backup this",NULL};
+char *FMenu2[8]={"Close","Copy selected files","Move selected files","Selected files to Trash","Delete selected files",NULL};
+char *DMenu1[5]= {"Close","Make new folder","Rename","Backup",NULL};
+char *DMenu2[5]= {"Close","Make new folder",NULL};
 #define kgFree(pt) {if(pt!=NULL) free(pt);pt=NULL;}
 #define CHECKDELETESAME {\
 	 if(same) {\
@@ -110,6 +110,92 @@ char *DMenu2[5]= {"Make new folder","Close",NULL};
     kgSortList(W); \
     kgUpdateWidget(W);\
     kgUpdateOn(Tmp);\
+  }\
+}
+#define ProcessBackup(Folder,W) {\
+  int exist=0;\
+  ThumbNail *Thnew=NULL;\
+  sprintf(fname,"%-s/%-s",Folder,Th->name); \
+  strcpy(from,Th->name); \
+  sprintf(job," Backup/copy name for %-s ",Th->name); \
+  strcat(job,"%30s"); \
+  strcpy(to,Th->name); \
+  strcat(to,".bak");\
+  gscanf(Tmp,job,to); \
+  sprintf(job,"cp -r  %-s/%-s %-s/%-s ",Folder,from,Folder,to); \
+  sprintf(fname,"%-s/%-s",Folder,to); \
+  if( kgCheckFileType(fname) != NULL) exist=1;\
+  system(job); \
+  if(kgCheckFileType(fname)!= NULL) { \
+    if(!exist) {\
+      Thnew = (ThumbNail *)kgCopyThumbNail(Th);\
+      free(Thnew->name); \
+      Thnew->name = (char *)malloc(strlen(to)+1);\
+      strcpy(Thnew->name,to);\
+      kgAddThumbNail(W,Thnew,0);\
+      printf("New Name: %s\n",Thnew->name); \
+      if(same) {\
+  	  void *Owid=NULL; \
+  	  ThumbNail *Oth=NULL;\
+          char *wname=NULL;\
+	  wname = kgGetWidgetName(Tmp,kgGetWidgetId(Tmp,W));\
+  	  if(strcmp(wname,"Xbox1")==0) {  Owid =X2; }\
+	    else if(strcmp(wname,"Xbox2")==0) {  Owid =X1; }\
+	         else if(strcmp(wname,"Ybox1")==0) {  Owid =Y2; }\
+  	              else if(strcmp(wname,"Ybox2")==0) {  Owid =Y1; }\
+  	  Oth= (ThumbNail *)kgCopyThumbNail(Thnew);\
+          kgAddThumbNail(Owid,Oth,0);\
+          kgSortList(Owid); \
+          kgUpdateWidget(Owid);\
+      }\
+      kgSortList(W); \
+      kgUpdateWidget(W);\
+      kgUpdateOn(Tmp);\
+    }\
+  }\
+}
+#define ProcessMakeFolder(Folder,W) {\
+  int exist=0;\
+  int count=0;\
+  ThumbNail *Thnew=NULL;\
+  sprintf(fname,"%-s/NewFolder%-3.3d",Folder,count); \
+  while ( kgCheckFileType(fname) != NULL) { \
+      count++; \
+      sprintf(fname,"%-s/NewFolder%-3.3d",Folder,count); \
+  }\
+  strcpy(from,Th->name); \
+  sprintf(job," New Folder Name  "); \
+  strcat(job,"%30s"); \
+  sprintf(to,"NewFolder%3.3d",count);\
+  gscanf(Tmp,job,to); \
+  sprintf(job,"mkdir   %-s/%-s",Folder,to); \
+  sprintf(fname,"%-s/%-s",Folder,to); \
+  if( kgCheckFileType(fname) != NULL) exist=1;\
+  system(job); \
+  if(kgCheckFileType(fname)!= NULL) { \
+    if(!exist) {\
+      Thnew = (ThumbNail *)kgCopyThumbNail(Th);\
+      free(Thnew->name); \
+      Thnew->name = (char *)malloc(strlen(to)+1);\
+      strcpy(Thnew->name,to);\
+      kgAddThumbNail(W,Thnew,0);\
+      printf("New Name: %s\n",Thnew->name); \
+      if(same) {\
+  	  void *Owid=NULL; \
+  	  ThumbNail *Oth=NULL;\
+          char *wname=NULL;\
+	  wname = kgGetWidgetName(Tmp,kgGetWidgetId(Tmp,W));\
+  	  if(strcmp(wname,"Xbox1")==0) {  Owid =X2; }\
+	    else if(strcmp(wname,"Xbox2")==0) {  Owid =X1; }\
+  	  Oth= (ThumbNail *)kgCopyThumbNail(Thnew);\
+          kgAddThumbNail(Owid,Oth,0);\
+          kgSortList(Owid); \
+          kgUpdateWidget(Owid);\
+      }\
+      kgSortList(W); \
+      kgUpdateWidget(W);\
+      kgUpdateOn(Tmp);\
+    }\
   }\
 }
 #define ProcessOtherButtonClick(W,Menu1,Menu2) {\
@@ -1087,8 +1173,14 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 	  if(kgCheckWidgetName(wid,"Xbox1")) {
 		  ProcessOtherButtonClick(X1,DMenu1,DMenu2);
 		  switch(rval) {
+			  case 2:
+			    ProcessMakeFolder(Folder1,X1);
+			    break;
 			  case 3:
 			    ProcessRename(Folder1,X1);
+			    break;
+			  case 4:
+			    ProcessBackup(Folder1,X1);
 			    break;
 			  default:
 			    break;
@@ -1097,8 +1189,11 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 	  if(kgCheckWidgetName(wid,"Ybox1")) {
 	          ProcessOtherButtonClick(Y1,FMenu1,FMenu2);
 		  switch(rval) {
-			  case 5:
+			  case 6:
 			    ProcessRename(Folder1,Y1);
+			    break;
+			  case 7:
+			    ProcessBackup(Folder1,Y1);
 			    break;
 			  default:
 			    break;
@@ -1108,8 +1203,14 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 	  if(kgCheckWidgetName(wid,"Xbox2")) {
 		  ProcessOtherButtonClick(X2,DMenu1,DMenu2);
 		  switch(rval) {
+			  case 2:
+			    ProcessMakeFolder(Folder2,X2);
+			    break;
 			  case 3:
 			    ProcessRename(Folder2,X2);
+			    break;
+			  case 4:
+			    ProcessBackup(Folder2,X2);
 			    break;
 			  default:
 			    break;
@@ -1118,8 +1219,11 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 	  if(kgCheckWidgetName(wid,"Ybox2")) {
 	          ProcessOtherButtonClick(Y2,FMenu1,FMenu2);
 		  switch(rval) {
-			  case 5:
+			  case 6:
 			    ProcessRename(Folder2,Y2);
+			    break;
+			  case 7:
+			    ProcessBackup(Folder2,Y2);
 			    break;
 			  default:
 			    break;
