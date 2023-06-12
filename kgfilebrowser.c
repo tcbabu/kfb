@@ -5,24 +5,25 @@
 #define R 120
 #define G 140
 #define B 120
+
 int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   int GrpId=0,oitems=0,i,j;
   DIA *d=NULL,*dtmp;
   DIY y0 = { 
     'y',
-    5,60,  
-    200,650,   
+    5,95,  
+    188,605,   
     72,32,  
     24, 
     24, 
     1,9808587, 
-    0,10, 
+    0,8, 
     (int *)v[0], 
     NULL, 
     NULL, 
     NULL,kgfilebrowserbrowser1callback, /* *args, callback */
     4,  /* Border Offset  */
-     16,  /* Scroll width  */
+     20,  /* Scroll width  */
      2,  /* Type  */
      1, /* item highlight */
     1, /* bordr */
@@ -33,13 +34,13 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   y0.item = -1;
   DIY y1 = { 
     'y',
-    190,60,  
-    605,650,   
+    192,95,  
+    734,605,   
     72,44,  
     48, 
     48, 
     1,9808587, 
-    0,6, 
+    0,5, 
     (int *)v[1], 
     NULL, 
     NULL, 
@@ -57,23 +58,24 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   BUT_STR  *butn2=NULL; 
   butn2= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
   butn2[0].sw=1;
-//  strcpy(butn2[0].title,(char *)"Quit");
   strcpy(butn2[0].title,(char *)"");
   butn2[0].xpmn=kgPowerdownImage(22,180,0,60);
   butn2[0].xpmp=NULL;
   butn2[0].xpmh=NULL;
+#if 0
 #if 1
-//  butn2[0].xpmn= (char *)malloc(100); 
-//  strcpy(butn2[0].xpmn,(char *)"##/usr/share/icons/CratOS_lion-icons/actions/scalable/application-exit.png");
+  butn2[0].xpmn= (char *)malloc(100); 
+  strcpy(butn2[0].xpmn,(char *)"##/usr/share/icons/CratOS_lion-icons/actions/scalable/application-exit.png");
 #else
   butn2[0].xpmn= kgGetProcessedImage("##/usr/share/icons/CratOS_lion-icons/actions/scalable/application-exit.png",40,0.8,0,0,0);
+#endif
 #endif
   butn2[0].bkgr=-1;
   butn2[0].butncode='';
   DIL h2 = { 
     'h',
-    1132,14,  
-    1182,62,
+    1396,42,  
+    1446,90,
     2,0,  
     40, 
     40, 
@@ -88,19 +90,19 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   h2.item = -1;
   DIY y3 = { 
     'y',
-    1013,60,  
-    1184,650,   
+    1269,95,  
+    1444,605,   
     72,32,  
     24, 
     24, 
     1,40, 
-    0,10, 
+    0,8, 
     (int *)v[2], 
     NULL, 
     NULL, 
     NULL,kgfilebrowserbrowser3callback, /* *args, callback */
     4,  /* Border Offset  */
-     16,  /* Scroll width  */
+     20,  /* Scroll width  */
      2,  /* Type  */
      1, /* item highlight */
     1, /* bordr */
@@ -111,13 +113,13 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   y3.item = -1;
   DIY y4 = { 
     'y',
-    609,60,  
-    1012,650,   
+    739,95,  
+    1269,605,   
     72,44,  
     48, 
     48, 
     1,40, 
-    0,6, 
+    0,5, 
     (int *)v[3], 
     NULL, 
     NULL, 
@@ -135,7 +137,6 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   BUT_STR  *butn5=NULL; 
   butn5= (BUT_STR *)malloc(sizeof(BUT_STR)*2);
   butn5[0].sw=1;
-//  strcpy(butn5[0].title,(char *)"Home");
   strcpy(butn5[0].title,(char *)"");
   butn5[0].xpmn=kgHomeImage(22,R,G,B);
   butn5[0].xpmp=NULL;
@@ -143,7 +144,6 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn5[0].bkgr=-1;
   butn5[0].butncode='';
   butn5[1].sw=1;
-//  strcpy(butn5[1].title,(char *)"Up");
   strcpy(butn5[1].title,(char *)"");
   butn5[1].xpmn=kgUpdirImage(22,R,G,B);
   butn5[1].xpmp=NULL;
@@ -177,7 +177,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   DIT t6 = { 
     't',
     105,21,  
-    526,54,
+    504,53,
     20, 
     1,1, 
     e6,
@@ -191,7 +191,6 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   BUT_STR  *butn7=NULL; 
   butn7= (BUT_STR *)malloc(sizeof(BUT_STR)*2);
   butn7[0].sw=1;
-//  strcpy(butn7[0].title,(char *)"Home");
   strcpy(butn7[0].title,(char *)"");
   butn7[0].xpmn=kgHomeImage(22,R,G,B);
   butn7[0].xpmp=NULL;
@@ -199,7 +198,6 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn7[0].bkgr=-1;
   butn7[0].butncode='';
   butn7[1].sw=1;
-//  strcpy(butn7[1].title,(char *)"Up");
   strcpy(butn7[1].title,(char *)"");
   butn7[1].xpmn=kgUpdirImage(22,R,G,B);
   butn7[1].xpmp=NULL;
@@ -208,8 +206,8 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn7[1].butncode='';
   DIN b7 = { 
     'n',
-    618,6,  
-    710,56,
+    1301,9,  
+    1393,59,
     2,2,  
     40, 
     40, 
@@ -232,8 +230,8 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   e8[0].img=NULL;
   DIT t8 = { 
     't',
-    710,21,  
-    1131,54,
+    897,20,  
+    1297,53,
     20, 
     1,1, 
     e8,
@@ -246,8 +244,8 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   t8.item = -1;
   DIY y9 = { 
     'y',
-    116,650,  
-    1066,758,   
+    116,607,  
+    1323,737,   
     72,44,  
     48, 
     48, 
@@ -275,12 +273,14 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn10[0].xpmp=NULL;
   butn10[0].xpmh=NULL;
 #if 1
-  butn10[0].xpmn= (char *)&empty_str;
+  butn10[0].xpmn= (char *)malloc(100); 
+  strcpy(butn10[0].xpmn,(char *)"##/usr/share/icons/CratOS_lion-icons/apps/scalable/gnome-fs-trash-empty.png");
 #else
   butn10[0].xpmn= kgGetProcessedImage("##/usr/share/icons/CratOS_lion-icons/apps/scalable/gnome-fs-trash-empty.png",72,0.8,0,0,0);
 #endif
 #if 1
-  butn10[0].xpmp= (char *)&clanbomber_str;
+  butn10[0].xpmp= (char *)malloc(100); 
+  strcpy(butn10[0].xpmp,(char *)"##/usr/share/icons/CratOS_lion-icons/apps/scalable/clanbomber.png");
 #else
   butn10[0].xpmp= kgGetProcessedImage("##/usr/share/icons/CratOS_lion-icons/apps/scalable/clanbomber.png",72,0.8,0,0,0);
 #endif
@@ -288,8 +288,8 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn10[0].butncode='';
   DIN b10 = { 
     'n',
-    32,648,  
-    112,758,
+    32,617,  
+    112,727,
     2,2,  
     72, 
     96, 
@@ -300,25 +300,203 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
     kgfilebrowserbutton3callback, /*  Callbak */
       NULL  /* any args */
   };
-  strcpy(b10.Wid,(char *)"Trash");
+  strcpy(b10.Wid,(char *)"TrashButn");
   b10.item = -1;
-  char *xpm11=  (char *)&trash_empty_str;
+  char *xpm11=   (char *)&trash_empty_str;
   DIP p11 = { 
     'p',
-    1066,655,  
-    1188,755,  
+    1327,608,  
+    1443,734,  
     (void *)xpm11,
     -1, /* bkgr colour */ 
       -1,0,0.000000 /* border hide transparency*/ 
   };
   strcpy(p11.Wid,(char *)"Imagebox");
   p11.item = -1;
+  BUT_STR  *butn12=NULL; 
+  butn12= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
+  butn12[0].sw=1;
+  strcpy(butn12[0].title,(char *)"New Folder");
+  butn12[0].xpmn=NULL;
+  butn12[0].xpmp=NULL;
+  butn12[0].xpmh=NULL;
+  butn12[0].bkgr=-1;
+  butn12[0].butncode='';
+  DIN b12 = { 
+    'n',
+    3,61,  
+    93,95,
+    2,2,  
+    80, 
+    30, 
+    1,1, 
+    5,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+ 
+    butn12, 
+    kgfilebrowserbutton4callback, /*  Callbak */
+      NULL  /* any args */
+  };
+  strcpy(b12.Wid,(char *)"NewFolderL");
+  b12.item = -1;
+  BUT_STR  *butn13=NULL; 
+  butn13= (BUT_STR *)malloc(sizeof(BUT_STR)*1);
+  butn13[0].sw=1;
+  strcpy(butn13[0].title,(char *)"New Folder");
+  butn13[0].xpmn=NULL;
+  butn13[0].xpmp=NULL;
+  butn13[0].xpmh=NULL;
+  butn13[0].bkgr=-1;
+  butn13[0].butncode='';
+  DIN b13 = { 
+    'n',
+    1266,62,  
+    1356,102,
+    2,2,  
+    80, 
+    30, 
+    1,1, 
+    5,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+ 
+    butn13, 
+    kgfilebrowserbutton5callback, /*  Callbak */
+      NULL  /* any args */
+  };
+  strcpy(b13.Wid,(char *)"NewFolderR");
+  b13.item = -1;
+  BUT_STR  *butn14=NULL; 
+  butn14= (BUT_STR *)malloc(sizeof(BUT_STR)*5);
+  butn14[0].sw=1;
+  strcpy(butn14[0].title,(char *)"Select all");
+  butn14[0].xpmn=NULL;
+  butn14[0].xpmp=NULL;
+  butn14[0].xpmh=NULL;
+  butn14[0].bkgr=-1;
+  butn14[0].butncode='';
+  butn14[1].sw=1;
+  strcpy(butn14[1].title,(char *)"Clear");
+  butn14[1].xpmn=NULL;
+  butn14[1].xpmp=NULL;
+  butn14[1].xpmh=NULL;
+  butn14[1].bkgr=-1;
+  butn14[1].butncode='';
+  butn14[2].sw=1;
+  strcpy(butn14[2].title,(char *)"Copy selected");
+  butn14[2].xpmn=NULL;
+  butn14[2].xpmp=NULL;
+  butn14[2].xpmh=NULL;
+  butn14[2].bkgr=-1;
+  butn14[2].butncode='';
+  butn14[3].sw=1;
+  strcpy(butn14[3].title,(char *)"Move selected");
+  butn14[3].xpmn=NULL;
+  butn14[3].xpmp=NULL;
+  butn14[3].xpmh=NULL;
+  butn14[3].bkgr=-1;
+  butn14[3].butncode='';
+  butn14[4].sw=1;
+  strcpy(butn14[4].title,(char *)"To trash selected");
+  butn14[4].xpmn=NULL;
+  butn14[4].xpmp=NULL;
+  butn14[4].xpmh=NULL;
+  butn14[4].bkgr=-1;
+  butn14[4].butncode='';
+  DIN b14 = { 
+    'n',
+    191,62,  
+    659,102,
+    0,0,  
+    90, 
+    30, 
+    5,1, 
+    5,0.250000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+ 
+    butn14, 
+    kgfilebrowserbutton6callback, /*  Callbak */
+    NULL  /* any args */
+  };
+  strcpy(b14.Wid,(char *)"OptionsL");
+  b14.item = -1;
+  BUT_STR  *butn15=NULL; 
+  butn15= (BUT_STR *)malloc(sizeof(BUT_STR)*5);
+  butn15[0].sw=1;
+  strcpy(butn15[0].title,(char *)"Select all");
+  butn15[0].xpmn=NULL;
+  butn15[0].xpmp=NULL;
+  butn15[0].xpmh=NULL;
+  butn15[0].bkgr=-1;
+  butn15[0].butncode='';
+  butn15[1].sw=1;
+  strcpy(butn15[1].title,(char *)"Clear");
+  butn15[1].xpmn=NULL;
+  butn15[1].xpmp=NULL;
+  butn15[1].xpmh=NULL;
+  butn15[1].bkgr=-1;
+  butn15[1].butncode='';
+  butn15[2].sw=1;
+  strcpy(butn15[2].title,(char *)"Copy selected");
+  butn15[2].xpmn=NULL;
+  butn15[2].xpmp=NULL;
+  butn15[2].xpmh=NULL;
+  butn15[2].bkgr=-1;
+  butn15[2].butncode='';
+  butn15[3].sw=1;
+  strcpy(butn15[3].title,(char *)"Move selected");
+  butn15[3].xpmn=NULL;
+  butn15[3].xpmp=NULL;
+  butn15[3].xpmh=NULL;
+  butn15[3].bkgr=-1;
+  butn15[3].butncode='';
+  butn15[4].sw=1;
+  strcpy(butn15[4].title,(char *)"To trash selected");
+  butn15[4].xpmn=NULL;
+  butn15[4].xpmp=NULL;
+  butn15[4].xpmh=NULL;
+  butn15[4].bkgr=-1;
+  butn15[4].butncode='';
+  DIN b15 = { 
+    'n',
+    738,62,  
+    1206,102,
+    0,0,  
+    90, 
+    30, 
+    5,1, 
+    5,0.250000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+ 
+    butn15, 
+    kgfilebrowserbutton7callback, /*  Callbak */
+      NULL  /* any args */
+  };
+  strcpy(b15.Wid,(char *)"OptionsR");
+  b15.item = -1;
+  T_ELMT *e16  ; 
+  e16 =(T_ELMT *)malloc(sizeof(T_ELMT)*1);
+  e16[0].fmt = (char *)malloc(19);
+  strcpy(e16[0].fmt,(char *)"Filter(simple)%30s");
+  e16[0].v=(void *)v[7];
+  e16[0].sw=1;
+  e16[0].noecho=0;
+  e16[0].img=NULL;
+  DIT t16 = { 
+    't',
+    502,18,  
+    895,54,
+    20, 
+    1,1, 
+    e16,
+    1,1,
+    NULL,kgfilebrowsertextbox3callback,1,1,18,9 /* args,Call back */
+  };
+  strcpy(t16.Wid,(char *)"FilterBox");
+  t16.pt=NULL;
+  t16.type = 0;
+  t16.item = -1;
   dtmp = D->d;
   i=0;
   if(dtmp!= NULL) while(dtmp[i].t!=NULL)i++;
-  dtmp = (DIA *)realloc(dtmp,sizeof(DIA )*(i+13));
+  dtmp = (DIA *)realloc(dtmp,sizeof(DIA )*(i+18));
   d =dtmp+i; 
-  d[12].t=NULL;
+  d[17].t=NULL;
   d[0].t = (DIT *)malloc(sizeof(DIY));
   *d[0].y = y0;
   d[0].y->item = -1;
@@ -364,7 +542,26 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   d[11].t = (DIT *)malloc(sizeof(DIP));
   *d[11].p = p11;
   d[11].p->item = -1;
-  d[12].t = NULL;
+  d[12].t = (DIT *)malloc(sizeof(DIN));
+  *d[12].N = b12;
+  d[12].N->item = -1;
+  kgfilebrowserbutton4init(d[12].N,pt) ;
+  d[13].t = (DIT *)malloc(sizeof(DIN));
+  *d[13].N = b13;
+  d[13].N->item = -1;
+  kgfilebrowserbutton5init(d[13].N,pt) ;
+  d[14].t = (DIT *)malloc(sizeof(DIN));
+  *d[14].N = b14;
+  d[14].N->item = -1;
+  kgfilebrowserbutton6init(d[14].N,pt) ;
+  d[15].t = (DIT *)malloc(sizeof(DIN));
+  *d[15].N = b15;
+  d[15].N->item = -1;
+  kgfilebrowserbutton7init(d[15].N,pt) ;
+  d[16].t = (DIT *)malloc(sizeof(DIT));
+  *d[16].t = t16;
+  d[16].t->item = -1;
+  d[17].t = NULL;
   GrpId=kgOpenGrp(D);
   D->d = dtmp;
   j=0;
@@ -386,6 +583,7 @@ int MakekgfilebrowserGroup(DIALOG *D,void *arg) {
     Text_Box1  1 data values
     Text_Box2  1 data values
     ThumbnailBrowser5  1 data value
+    Text_Box3  1 data values
 
 *************************************************/
    int  *v0 ;
@@ -409,8 +607,11 @@ int MakekgfilebrowserGroup(DIALOG *D,void *arg) {
    int  *v6 ;
    v6 = (int *)malloc(sizeof(int));
    *v6 = 1;
-   void** v=(void **)malloc(sizeof(void*)*8);
-   v[7]=NULL;
+   char  *v7 ;
+   v7 = (char *)malloc(sizeof(char)*500);
+   v7[0] = '\0';
+   void** v=(void **)malloc(sizeof(void*)*9);
+   v[8]=NULL;
    v[0]=(void *)(v0);
    v[1]=(void *)(v1);
    v[2]=(void *)(v2);
@@ -418,6 +619,7 @@ int MakekgfilebrowserGroup(DIALOG *D,void *arg) {
    v[4]=(void *)(v4);
    v[5]=(void *)(v5);
    v[6]=(void *)(v6);
+   v[7]=(void *)(v7);
    void *pt=NULL; /* pointer to send any extra information */
    GrpId = kgfilebrowserGroup(D,v,pt);
    Gpt = kgGetWidgetGrp(D,GrpId);
@@ -441,15 +643,15 @@ int kgfilebrowser( void *parent,void **v,void *pt) {
   D.d = d;
   D.bkup = 1; /* set to 1 for backup */
   D.bor_type = 4;
-  D.df = 10;
+  D.df = 15;
   D.tw = 4;
   D.bw = 4;
   D.lw = 4;
   D.rw = 4;
   D.xo = 37;   /* Position of Dialog */ 
   D.yo = 37;
-  D.xl = 1194;    /*  Length of Dialog */
-  D.yl = 765;    /*  Width  of Dialog */
+  D.xl = 1453;    /*  Length of Dialog */
+  D.yl = 740;    /*  Width  of Dialog */
   D.Initfun = kgfilebrowserinit;    /*   init fuction for Dialog */
   D.Cleanupfun = kgfilebrowsercleanup;    /*   init fuction for Dialog */
   D.kbattn = 0;    /*  1 for drawing keyborad attention */
@@ -482,7 +684,7 @@ int kgfilebrowser( void *parent,void **v,void *pt) {
   D.Shapexpm = NULL;    /*  PNG/jpeg file for window shape;Black color will not be drawn */
   D.parent = parent;    /*  1 for not showing in task bar*/
   D.pt = pt;    /*  any data to be passed by user*/
-  strcpy(D.name,"Kulina File Browser 1.0");    /*  Dialog name you may change */
+  strcpy(D.name,"Kulina File Browser ver 1.0");    /*  Dialog name you may change */
   if(D.fullscreen!=1) {    /*  if not fullscreen mode */
      int xres,yres; 
      kgDisplaySize(&xres,&yres); 
@@ -510,6 +712,7 @@ void *Runkgfilebrowser(void *arg) {
     Text_Box1  1 data values
     Text_Box2  1 data values
     ThumbnailBrowser5  1 data value
+    Text_Box3  1 data values
 
 *************************************************/
    int   v0 = 1;
@@ -519,7 +722,8 @@ void *Runkgfilebrowser(void *arg) {
    char  v4[500]="" ;
    char  v5[500]="" ;
    int   v6 = 1;
-   void* v[7];
+   char  v7[500]="" ;
+   void* v[8];
    v[0]=(void *)(&v0);
    v[1]=(void *)(&v1);
    v[2]=(void *)(&v2);
@@ -527,6 +731,7 @@ void *Runkgfilebrowser(void *arg) {
    v[4]=(void *)(v4);
    v[5]=(void *)(v5);
    v[6]=(void *)(&v6);
+   v[7]=(void *)(v7);
    void *pt=NULL; /* pointer to send any extra information */
    kgfilebrowser(NULL,v,pt );
    return NULL;

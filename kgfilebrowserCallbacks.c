@@ -23,6 +23,8 @@ char *kgCheckFileType(char *name);
 static ThumbNail **GetFolderThumbNails(char *Folder,int size);
 static ThumbNail **GetFileThumbNails(char *Folder,int size);
 int RunkgPopUpMenu(void *arg,int xo,int yo,char **menu);
+static char *MakeFileToken(char *src,char *check,char *token);
+static ThumbNail *MakeThumbNail(char *name,int size);
 
 char *FMenu1[8]={"Close","Copy selected files","Move selected files","Selected files to Trash","Delete selected files","Rename this","Backup this",NULL};
 char *FMenu2[8]={"Close","Copy selected files","Move selected files","Selected files to Trash","Delete selected files",NULL};
@@ -86,12 +88,11 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
   strcpy(to,Th->name); \
   gscanf(Tmp,job,to); \
   sprintf(job,"rename %-s %-s %-s",Th->name,to,fname); \
-  system(job); \
+  kgRunJob(job,NULL); \
   sprintf(fname,"%-s/%-s",Folder,to); \
   if(kgCheckFileType(fname)!= NULL) { \
     free(Th->name); \
     kgSetThumbNailName(W,item,to); \
-    printf("New Name: %s\n",Th->name); \
     if(same) {\
   	  void *Owid=NULL; \
   	  ThumbNail *Oth=NULL;\
@@ -125,7 +126,7 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
   sprintf(job,"cp -r  %-s/%-s %-s/%-s ",Folder,from,Folder,to); \
   sprintf(fname,"%-s/%-s",Folder,to); \
   if( kgCheckFileType(fname) != NULL) exist=1;\
-  system(job); \
+  kgRunJob(job,NULL);\
   if(kgCheckFileType(fname)!= NULL) { \
     if(!exist) {\
       Thnew = (ThumbNail *)kgCopyThumbNail(Th);\
@@ -133,7 +134,6 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
       Thnew->name = (char *)malloc(strlen(to)+1);\
       strcpy(Thnew->name,to);\
       kgAddThumbNail(W,Thnew,0);\
-      printf("New Name: %s\n",Thnew->name); \
       if(same) {\
   	  void *Owid=NULL; \
   	  ThumbNail *Oth=NULL;\
@@ -163,7 +163,6 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
       count++; \
       sprintf(fname,"%-s/NewFolder%-3.3d",Folder,count); \
   }\
-  strcpy(from,Th->name); \
   sprintf(job," New Folder Name  "); \
   strcat(job,"%30s"); \
   sprintf(to,"NewFolder%3.3d",count);\
@@ -171,22 +170,18 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
   sprintf(job,"mkdir   %-s/%-s",Folder,to); \
   sprintf(fname,"%-s/%-s",Folder,to); \
   if( kgCheckFileType(fname) != NULL) exist=1;\
-  system(job); \
+  kgRunJob(job,NULL);\
   if(kgCheckFileType(fname)!= NULL) { \
     if(!exist) {\
-      Thnew = (ThumbNail *)kgCopyThumbNail(Th);\
-      free(Thnew->name); \
-      Thnew->name = (char *)malloc(strlen(to)+1);\
-      strcpy(Thnew->name,to);\
+      Thnew = (ThumbNail *)MakeThumbNail(to,20);\
       kgAddThumbNail(W,Thnew,0);\
-      printf("New Name: %s\n",Thnew->name); \
       if(same) {\
   	  void *Owid=NULL; \
   	  ThumbNail *Oth=NULL;\
           char *wname=NULL;\
 	  wname = kgGetWidgetName(Tmp,kgGetWidgetId(Tmp,W));\
   	  if(strcmp(wname,"Xbox1")==0) {  Owid =X2; }\
-	    else if(strcmp(wname,"Xbox2")==0) {  Owid =X1; }\
+	  else if(strcmp(wname,"Xbox2")==0) {  Owid =X1; }\
   	  Oth= (ThumbNail *)kgCopyThumbNail(Thnew);\
           kgAddThumbNail(Owid,Oth,0);\
           kgSortList(Owid); \
@@ -200,7 +195,6 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
 }
 #define ProcessOtherButtonClick(W,Menu1,Menu2) {\
 		  rval =-1; \
-		  printf("Otherbutton on Xbox1\n"); \
 		  kgGetClickedPosition(Tmp,&x,&y); \
 		  item = kgGetThumbNailItem(W,x,y); \
 		  List=(ThumbNail **)kgGetList(W); \
@@ -211,10 +205,8 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
 		  if(item>= 0)  { \
 		    Th= (ThumbNail *)List[item]; \
 		    rval = RunkgPopUpMenu(Tmp,xpos,ypos,Menu1); \
-		    printf("Name = %s\n",Th->name); \
 		  } \
 		  else rval = RunkgPopUpMenu(Tmp,x,y,Menu2); \
-		  printf("Rval = %d\n",rval); \
 }
 static char *MakeFileToken(char *src,char *check,char *token) {
 	char *ret=NULL;
@@ -228,44 +220,47 @@ static char *MakeFileToken(char *src,char *check,char *token) {
 }
 char *kgCheckFileType(char *name) {
 	FILE *pp;
-	char wrk[500];
+	char wrk[500],tmp[500];
 	char *pt;
 	char *ret=NULL;
 	sprintf(wrk,"file %s",name);
-	printf("%s\n",wrk);
+//	printf("%s\n",wrk);
 	pp = popen(wrk,"r");
-	while (fgets(wrk,499,pp) != NULL) {
-	        printf("%s\n",wrk);
-		pt = strstr(wrk,"cannot open");
-		if(pt != NULL) return NULL;
-		ret = MakeFileToken(wrk,"executable","Exe");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk," image data","Image");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk," MPEG","Music");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk," MP4","Video");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk," WAVE","Music");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk," Stereo","Music");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk," stereo","Music");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk," audio","Music");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk," Audio","Music");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk," directory","Folder");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk,"gzip compressed","Gzip");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk,"tar archive","Tar");
-		if (ret!= NULL) return ret;
-		ret = MakeFileToken(wrk,"C source","Csource");
-		if (ret!= NULL) return ret;
+	if(pp == NULL) return NULL;
+	while (fgets(tmp,499,pp) != NULL) {
+//	        printf("%s\n",tmp);
+//		fflush(stdout);
+		pt = strstr(tmp,"cannot open");
+		if(pt != NULL) {pclose(pp);return NULL;}
+		ret = MakeFileToken(tmp,"executable","Exe");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp," image data","Image");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp," MPEG","Music");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp," MP4","Video");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp," WAVE","Music");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp," Stereo","Music");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp," stereo","Music");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp," audio","Music");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp," Audio","Music");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp," directory","Folder");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp,"gzip compressed","Gzip");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp,"tar archive","Tar");
+		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp,"C source","Csource");
+		if (ret!= NULL) {pclose(pp);return ret;}
 		ret = malloc(strlen("Unknown")+1);
 		strcpy(ret,"Unknown");
+		pclose(pp);
 		return ret;
 	}
 }
@@ -342,8 +337,9 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       ThumbNail *th;
 		       char *ret1;
 		       th = kgGetThumbNail(fw,item);
+		       sprintf(job,"rm -rf %-s/%-s",sdir,th->name);
+		       kgRunJob(job,NULL);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
-		       remove(job);
 		       if((ret1=kgCheckFileType(job))== NULL) {
 			 CHECKDELETESAME;
 		         kgDeleteThumbNail(fw,item);
@@ -358,7 +354,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       char *ret1;
 		       th = kgGetThumbNail(fw,item);
 		       sprintf(job,"mv %-s/%-s %s",sdir,th->name,Trash);
-		       system(job);
+		       kgRunJob(job,NULL);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
 		       if((ret1=kgCheckFileType(job))== NULL) {
 		         th = kgPickThumbNail(fw,item);
@@ -382,7 +378,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       sprintf(flname,"%-s/%-s",sdir,th->name);
 		       ret=kgCheckFileType(flname);
 		       sprintf(job,"mv %-s/%-s %s",sdir,th->name,ddir);
-		       system(job);
+		       kgRunJob(job,NULL);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
 		       if((ret1=kgCheckFileType(job))== NULL) {
 		         th = kgPickThumbNail(fw,item);
@@ -446,7 +442,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 #if 0
                printf("%s\n",job);
 #endif
-               system(job);
+               kgRunJob(job,NULL);
 	       if(kgCheckFileType(destloc)==NULL) return 1;
 	       kgAddThumbNail(tw,kgCopyThumbNail(kgGetThumbNail(fw,item)),0);
 	       kgSortList(tw);
@@ -461,14 +457,20 @@ static int DragItem(void *Tmp,void *fw,int item) {
   else return 0;
 }
 #else
-static int DragItem(void *Tmp,void *fw,int item) {
+#endif
+static int CopyItems(void *Tmp,void *fw) {
   DIY *FY,*TY;
+  int item=0,i=0;
+  ThumbNail **th;
   FY = (DIY *)fw;
   int x=-1,y=-1;
   void *tw=NULL;
   char *src,*des;
   char job[500];
   char Dir1[200]="",Dir2[200]="";
+  char destloc[500];
+  char *sdir,*ddir;;
+  char *fret=NULL;
   int sid,did;
   int same=0;
   if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
@@ -476,123 +478,141 @@ static int DragItem(void *Tmp,void *fw,int item) {
   sid = kgGetWidgetId(Tmp,fw);
   src = kgGetWidgetName(Tmp,sid);
   same =0;
+  if( (strcmp(src,"Ybox1")==0)){ sdir=Folder1;ddir=Folder2;tw= kgGetNamedWidget(Tmp,"Ybox2");}
+  if( (strcmp(src,"Ybox2")==0)) { sdir=Folder2; ddir=Folder1;tw= kgGetNamedWidget(Tmp,"Ybox1");}
   if(strcmp(Folder1,Folder2)==0) same=1;
-  if(kgDragThumbNail(FY,item,&x,&y)) {
-     tw = (DIT *)kgGetLocationWidget(Tmp,x,y);
-     if(tw != NULL) {
-               did = kgGetWidgetId(Tmp,tw);
-	       if(sid == did ) return 0;
-               des = kgGetWidgetName(Tmp,did);
-	       if(strcmp(des,"Imagebox")==0) {
-		       ThumbNail *th;
-		       th = kgPickThumbNail(fw,item);
-		       remove(th->name);
-		       kgFreeThumbNail(th);
-		       kgUpdateWidget(fw);
-		       kgUpdateOn(Tmp);
-		       return 1;
-	       }
-//	       printf("%s | %s\n",src,des);
-	       if( (strcmp(src,"Xbox1")==0) &&(strcmp(des,"Xbox2")==0)) {
-		 if(same) return 1;
-                 sprintf(job,"cp -r %-s/%-s %-s",
-			 Dir1,kgGetThumbNailName(fw,item),Folder2);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Ybox1")==0) &&(strcmp(des,"Ybox2")==0)) {
-		 if(same) return 1;
-                 sprintf(job,"cp -r %-s/%-s %-s",
-			 Dir1,kgGetThumbNailName(fw,item),Folder2);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Xbox2")==0) &&(strcmp(des,"Xbox1")==0)) {
-		 if(same) return 1;
-                 sprintf(job,"cp -r %-s/%-s %-s",
-			 Dir2,kgGetThumbNailName(fw,item),Folder1);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Ybox2")==0) &&(strcmp(des,"Ybox1")==0)) {
-		 if(same) return 1;
-                 sprintf(job,"cp -r %-s/%-s %-s",
-			 Dir2,kgGetThumbNailName(fw,item),Folder1);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Xbox1")==0) &&(strcmp(des,"Trash")==0)) {
-                 sprintf(job,"mv  %-s/%-s %-s",
-			 Dir1,kgGetThumbNailName(fw,item),Trash);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Ybox1")==0) &&(strcmp(des,"Trash")==0)) {
-                 sprintf(job,"mv %-s/%-s %-s",
-			 Dir1,kgGetThumbNailName(fw,item),Trash);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Xbox2")==0) &&(strcmp(des,"Trash")==0)) {
-                  sprintf(job,"mv %-s/%-s %-s",
-			 Dir2,kgGetThumbNailName(fw,item),Trash);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Ybox2")==0) &&(strcmp(des,"Trash")==0)) {
-                  sprintf(job,"mv %-s/%-s %-s",
-			 Dir2,kgGetThumbNailName(fw,item),Trash);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Trash")==0) &&(strcmp(des,"Xbox1")==0)) {
-                 sprintf(job,"mv  %-s/%-s %-s",
-			 Trash,kgGetThumbNailName(fw,item),Folder1);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Trash")==0) &&(strcmp(des,"Xbox2")==0)) {
-                 sprintf(job,"mv  %-s/%-s %-s",
-			 Trash,kgGetThumbNailName(fw,item),Folder2);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Trash")==0) &&(strcmp(des,"Ybox1")==0)) {
-                 sprintf(job,"mv  %-s/%-s %-s",
-			 Trash,kgGetThumbNailName(fw,item),Folder1);
-		         goto jump;
-	       }
-	       if( (strcmp(src,"Trash")==0) &&(strcmp(des,"Ybox2")==0)) {
-                 sprintf(job,"mv  %-s/%-s %-s",
-			 Trash,kgGetThumbNailName(fw,item),Folder2);
-		         goto jump;
-	       }
-	       return 1;
-     jump:
-#if 0
-               printf("%s\n",job);
-#endif
-               system(job);
-	       kgAddThumbNail(tw,kgCopyThumbNail(kgGetThumbNail(fw,item)),0);
-	       if((strcmp(src,"Trash")==0)||(strcmp(des,"Trash")==0) ) {
-		       kgDeleteThumbNail(fw,item);
-	       }
-	       if((strcmp(src,"Trash")==0)&&((strcmp(des,"Ybox1")==0)||(strcmp(des,"Xbox1")==0)))  {
-		       Update1(Tmp);
-		       if(same) Update2(Tmp);
-	       }
-	       if((strcmp(src,"Trash")==0)&&((strcmp(des,"Ybox2")==0)||(strcmp(des,"Xbox2")==0)))  {
-		       Update2(Tmp);
-		       if(same) Update1(Tmp);
-	       }
-	       if((strcmp(des,"Trash")==0)&&((strcmp(src,"Ybox1")==0)||(strcmp(src,"Xbox1")==0)))  {
-		       if(same) Update2(Tmp);
-	       }
-	       if((strcmp(des,"Trash")==0)&&((strcmp(src,"Ybox2")==0)||(strcmp(src,"Xbox2")==0)))  {
-		       if(same) Update1(Tmp);
-	       }
-	       kgSortList(tw);
-	       kgListRemoveDup(tw);
-	       kgUpdateWidget(tw);
-	       kgUpdateWidget(fw);
-	       kgUpdateOn(Tmp);
-               Update1(Tmp);
-     }
-     return 1;
+  if(same) return 0;
+  th = (ThumbNail **)kgGetList(fw);
+  if(th != NULL) {
+    i =0;
+    while(th[i]!= NULL) {
+      if(kgGetSwitch(fw,i)) {
+        sprintf(job,"cp %-s/%-s %-s",sdir,th[i]->name,ddir);
+        kgRunJob(job,NULL);
+	sprintf(destloc,"%-s/%-s",ddir,th[i]->name);
+        if(kgCheckFileType(destloc)!=NULL)  {
+          kgAddThumbNail(tw,kgCopyThumbNail(th[i]),0);
+	}
+      }
+      i++;
+    }
   }
-  else return 0;
+  kgSortList(tw);
+  kgListRemoveDup(tw);
+  kgUpdateWidget(tw);
+  kgUpdateOn(Tmp);
+  return 1;
 }
-#endif
+static int MoveItems(void *Tmp,void *fw) {
+  DIY *FY,*TY;
+  int item=0,i=0;
+  ThumbNail **th,*thitem=NULL;
+  FY = (DIY *)fw;
+  int x=-1,y=-1;
+  void *tw=NULL;
+  char *src,*des;
+  char job[500];
+  char Dir1[200]="",Dir2[200]="";
+  char destloc[500];
+  char *sdir,*ddir;;
+  char *fret=NULL;
+  int sid,did;
+  int same=0;
+  if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
+  if(strcmp(Folder2,"/") !=0) strcpy(Dir2,Folder2);
+  sid = kgGetWidgetId(Tmp,fw);
+  src = kgGetWidgetName(Tmp,sid);
+  same =0;
+  if( (strcmp(src,"Ybox1")==0)){ sdir=Folder1;ddir=Folder2;tw= kgGetNamedWidget(Tmp,"Ybox2");}
+  if( (strcmp(src,"Ybox2")==0)) { sdir=Folder2; ddir=Folder1;tw= kgGetNamedWidget(Tmp,"Ybox1");}
+  if(strcmp(Folder1,Folder2)==0) same=1;
+  if(same) return 0;
+  th = (ThumbNail **)kgGetList(fw);
+  if(th != NULL) {
+    i =0;
+    while(th[i]!= NULL) {
+      if(kgGetSwitch(fw,i)) {
+        sprintf(job,"mv %-s/%-s %-s",sdir,th[i]->name,ddir);
+        kgRunJob(job,NULL);
+	sprintf(destloc,"%-s/%-s",ddir,th[i]->name);
+        if(kgCheckFileType(destloc)!=NULL)  {
+	  thitem = kgPickThumbNail(fw,i);
+          kgAddThumbNail(tw,thitem,0);
+	  th = (ThumbNail **)kgGetList(fw);
+	  continue;
+	}
+      }
+      i++;
+    }
+  }
+  kgSortList(tw);
+  kgListRemoveDup(tw);
+  kgUpdateWidget(tw);
+  kgUpdateWidget(fw);
+  kgUpdateOn(Tmp);
+  return 1;
+}
+static int RemoveItems(void *Tmp,void *fw) {
+  DIY *FY,*TY,*ow=NULL;
+  int item=0,i=0;
+  ThumbNail **th,*thitem=NULL;
+  FY = (DIY *)fw;
+  int x=-1,y=-1;
+  void *tw=NULL;
+  char *src,*des;
+  char job[500];
+  char Dir1[200]="",Dir2[200]="";
+  char destloc[500];
+  char *sdir,*ddir;;
+  char *fret=NULL;
+  int sid,did;
+  int same=0;
+  if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
+  if(strcmp(Folder2,"/") !=0) strcpy(Dir2,Folder2);
+  sid = kgGetWidgetId(Tmp,fw);
+  src = kgGetWidgetName(Tmp,sid);
+  same =0;
+  if( (strcmp(src,"Ybox1")==0)){ 
+	  sdir=Folder1;ddir=Trash;
+	  tw= kgGetNamedWidget(Tmp,"Trash");
+	  ow = kgGetNamedWidget(Tmp,"Ybox2");
+  }
+  if( (strcmp(src,"Ybox2")==0)) {
+	  sdir=Folder2; 
+	  ddir=Trash;
+	  tw= kgGetNamedWidget(Tmp,"Trash");
+	  ow = kgGetNamedWidget(Tmp,"Ybox1");
+  }
+  if(strcmp(Folder1,Folder2)==0) {
+	  same=1;
+  }
+  th = (ThumbNail **)kgGetList(fw);
+  if(th != NULL) {
+    i =0;
+    while(th[i]!= NULL) {
+      if(kgGetSwitch(fw,i)) {
+        sprintf(job,"mv %-s/%-s %-s",sdir,th[i]->name,ddir);
+        kgRunJob(job,NULL);
+	sprintf(destloc,"%-s/%-s",ddir,th[i]->name);
+        if(kgCheckFileType(destloc)!=NULL)  {
+	  thitem = kgPickThumbNail(fw,i);
+          kgAddThumbNail(tw,thitem,0);
+	  th = (ThumbNail **)kgGetList(fw);
+	  if(same) kgDeleteThumbNail(ow,i);
+	  continue;
+	}
+      }
+      i++;
+    }
+  }
+  kgSortList(tw);
+  kgListRemoveDup(tw);
+  kgUpdateWidget(tw);
+  kgUpdateWidget(fw);
+  if(same) kgUpdateWidget(ow);
+  kgUpdateOn(Tmp);
+  return 1;
+}
 int SetThumbNailImages(ThumbNail **th,int size) {
 	int i=0;
 	void *img;
@@ -603,6 +623,25 @@ int SetThumbNailImages(ThumbNail **th,int size) {
 		i++;
 	}
 	return 1;
+}
+static ThumbNail *MakeThumbNail(char *name,int size) {
+	ThumbNail *Th=NULL;
+	void *imgo=NULL,*img=NULL;
+	Th = (ThumbNail *) malloc(sizeof(ThumbNail));
+	if(folderimg == NULL) {
+          imgo = (void *)kgGetImageCopy(NULL,(void *)&folder_str);
+          if(imgo != NULL) {
+            folderimg = kgThumbNailImage(imgo,size,size);
+            kgFreeImage(imgo);
+          }
+        }
+	Th->img = kgCopyImage(folderimg);
+	Th->name = (char *) malloc(sizeof(strlen(name)+1));
+	strcpy(Th->name,name);
+	Th->sw = 1;
+	Th->id=1;
+	Th->state = 1;
+	return Th;
 }
 
 static ThumbNail **GetFolderThumbNails(char *Folder,int size) {
@@ -766,7 +805,7 @@ int  kgfilebrowserbrowser2callback(int item,int i,void *Tmp) {
                char job[400];
                sprintf(job,"cp %-s/%-s %-s",Folder1,kgGetThumbNailName(Y,item-1),Folder2);
                printf("%s\n",job);
-               system(job);
+               kgRunJob(job,NULL);
 	       kgAddThumbNail(Y2,kgCopyThumbNail(kgGetThumbNail(Y,item-1)),0);
 	       kgSortList(Y2);
 	       kgUpdateWidget(Y2);
@@ -1258,5 +1297,156 @@ int kgfilebrowserWaitCallBack(void *Tmp) {
     return value 1 will close the the UI  
    ***********************************/ 
   int ret = 0;
+  return ret;
+}
+int  kgfilebrowserbutton4callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  int same =0;
+  char from[300],to[300],fname[300];
+  char job[500];
+  ThumbNail *Th=NULL;
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  if(strcmp(Folder1,Folder2)==0) same=1;
+  ProcessMakeFolder(Folder1,X1);
+
+  switch(butno) {
+    case 1: 
+      break;
+  }
+  return ret;
+}
+void  kgfilebrowserbutton4init(DIN *B,void *pt) {
+}
+int  kgfilebrowserbutton5callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0; 
+  int same =0;
+  char from[300],to[300],fname[300];
+  char job[500];
+  ThumbNail *Th=NULL;
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  if(strcmp(Folder1,Folder2)==0) same=1;
+  ProcessMakeFolder(Folder2,X2);
+  switch(butno) {
+    case 1: 
+      break;
+  }
+  return ret;
+}
+void  kgfilebrowserbutton5init(DIN *B,void *pt) {
+}
+int  kgfilebrowserbutton6callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0,j=0; 
+  DIY *Y=NULL;
+  ThumbNail **th=NULL;
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  Y = (DIY *)kgGetNamedWidget(Tmp,"Ybox1");
+  switch(butno) {
+    case 1: 
+	    th= (ThumbNail **)kgGetList(Y);
+	    j=0;
+	    while(th[j]!= NULL) { kgSetSwitch(Y,j,1);j++;};
+	    kgUpdateWidget(Y);
+	    kgUpdateOn(Tmp);
+      break;
+    case 2: 
+	    th= (ThumbNail **)kgGetList(Y);
+	    j=0;
+	    while(th[j]!= NULL) { kgSetSwitch(Y,j,0);j++;};
+	    kgUpdateWidget(Y);
+	    kgUpdateOn(Tmp);
+      break;
+    case 3: 
+            CopyItems(Tmp,Y);
+      break;
+    case 4: 
+            MoveItems(Tmp,Y);
+      break;
+    case 5: 
+            RemoveItems(Tmp,Y);
+      break;
+  }
+  return ret;
+}
+void  kgfilebrowserbutton6init(DIN *B,void *pt) {
+}
+int  kgfilebrowserbutton7callback(int butno,int i,void *Tmp) {
+  /*********************************** 
+    butno : selected item (1 to max_item) 
+    i :  Index of Widget  (0 to max_widgets-1) 
+    Tmp :  Pointer to DIALOG  
+   ***********************************/ 
+  DIALOG *D;DIN *B; 
+  int n,ret =0,j=0; 
+  ThumbNail **th=NULL;
+  DIY *Y=NULL;
+  D = (DIALOG *)Tmp;
+  B = (DIN *)kgGetWidget(Tmp,i);
+  n = B->nx*B->ny;
+  Y = (DIY *)kgGetNamedWidget(Tmp,"Ybox2");
+  switch(butno) {
+    case 1: 
+	    th= (ThumbNail **)kgGetList(Y);
+	    j=0;
+	    while(th[j]!= NULL) { kgSetSwitch(Y,j,1);j++;};
+	    kgUpdateWidget(Y);
+	    kgUpdateOn(Tmp);
+      break;
+    case 2: 
+	    th= (ThumbNail **)kgGetList(Y);
+	    j=0;
+	    while(th[j]!= NULL) { kgSetSwitch(Y,j,0);j++;};
+	    kgUpdateWidget(Y);
+	    kgUpdateOn(Tmp);
+      break;
+    case 3: 
+            CopyItems(Tmp,Y);
+      break;
+    case 4: 
+            MoveItems(Tmp,Y);
+      break;
+    case 5: 
+            RemoveItems(Tmp,Y);
+      break;
+  }
+  return ret;
+}
+void  kgfilebrowserbutton7init(DIN *B,void *pt) {
+}
+int  kgfilebrowsertextbox3callback(int cellno,int i,void *Tmp) {
+  /************************************************* 
+   cellno: current cell counted along column strting with 0 
+           ie 0 to (nx*ny-1) 
+   i     : widget id starting from 0 
+   Tmp   : Pointer to DIALOG 
+   *************************************************/ 
+  DIALOG *D;DIT *T;T_ELMT *e; 
+  int ret=1;
+  D = (DIALOG *)Tmp;
+  T = (DIT *)kgGetWidget(Tmp,i);
+  e = T->elmt;
   return ret;
 }

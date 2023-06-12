@@ -64,7 +64,7 @@ int ModifykgPopUpMenu(void *Tmp,int GrpId) {
   n=1;
   X = (DIX *)kgGetNamedWidget(Tmp,"PopUp");
   yl = X->y2 - X->y1;
-  printf("%d %d %d\n",D->yl , X->y2+2,X->width);
+//  printf("%d %d %d\n",D->yl , X->y2+2,X->width);
   D->yl = X->y2+2;
   return GrpId;
 }
