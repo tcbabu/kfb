@@ -81,6 +81,7 @@ int kgPopUpMenuCallBack(void *Tmp,void *tmp) {
   kbe = (KBEVENT *)tmp;
   if(kbe->event ==1) {
     if(kbe->button ==1) {
+	    ret =1;
     }
   }
   return ret;
