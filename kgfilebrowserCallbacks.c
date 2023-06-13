@@ -116,6 +116,7 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
 #define ProcessBackup(Folder,W) {\
   int exist=0;\
   ThumbNail *Thnew=NULL;\
+  void *bs;\
   sprintf(fname,"%-s/%-s",Folder,Th->name); \
   strcpy(from,Th->name); \
   sprintf(job," Backup/copy name for %-s ",Th->name); \
@@ -126,7 +127,9 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
   sprintf(job,"cp -r  %-s/%-s %-s/%-s ",Folder,from,Folder,to); \
   sprintf(fname,"%-s/%-s",Folder,to); \
   if( kgCheckFileType(fname) != NULL) exist=1;\
+  bs = kgOpenBusy(Tmp,600,650);\
   kgRunJob(job,NULL);\
+  kgCloseBusy(bs);\
   if(kgCheckFileType(fname)!= NULL) { \
     if(!exist) {\
       Thnew = (ThumbNail *)kgCopyThumbNail(Th);\
@@ -319,6 +322,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
   char destloc[500];
   char *sdir,*ddir;;
   char *fret=NULL;
+  void *bs=NULL;
   int sid,did;
   int same=0;
   if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
@@ -344,7 +348,9 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       char *ret1;
 		       th = kgGetThumbNail(fw,item);
 		       sprintf(job,"rm -rf %-s/%-s",sdir,th->name);
+                       bs = kgOpenBusy(Tmp,600,650);
 		       kgRunJob(job,NULL);
+                       kgCloseBusy(bs);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
 		       if((ret1=kgCheckFileType(job))== NULL) {
 			 CHECKDELETESAME;
@@ -360,7 +366,9 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       char *ret1;
 		       th = kgGetThumbNail(fw,item);
 		       sprintf(job,"mv %-s/%-s %s",sdir,th->name,Trash);
+                       bs = kgOpenBusy(Tmp,600,650);
 		       kgRunJob(job,NULL);
+                       kgCloseBusy(bs);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
 		       if((ret1=kgCheckFileType(job))== NULL) {
 		         th = kgPickThumbNail(fw,item);
@@ -384,7 +392,9 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       sprintf(flname,"%-s/%-s",sdir,th->name);
 		       ret=kgCheckFileType(flname);
 		       sprintf(job,"mv %-s/%-s %s",sdir,th->name,ddir);
+                       bs = kgOpenBusy(Tmp,600,650);
 		       kgRunJob(job,NULL);
+		       kgCloseBusy(bs);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
 		       if((ret1=kgCheckFileType(job))== NULL) {
 		         th = kgPickThumbNail(fw,item);
@@ -428,6 +438,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		         goto jump;
 	       }
 	       if( (strcmp(src,"Xbox2")==0) &&(strcmp(des,"Xbox1")==0)) {
+   	         void *bs;
 		 if(same) return 1;
                  sprintf(job,"cp -r %-s/%-s %-s",
 			 Dir2,kgGetThumbNailName(fw,item),Folder1);
@@ -448,7 +459,9 @@ static int DragItem(void *Tmp,void *fw,int item) {
 #if 0
                printf("%s\n",job);
 #endif
+               bs = kgOpenBusy(Tmp,600,650);
                kgRunJob(job,NULL);
+	       kgCloseBusy(bs);
 	       if(kgCheckFileType(destloc)==NULL) return 1;
 	       kgAddThumbNail(tw,kgCopyThumbNail(kgGetThumbNail(fw,item)),0);
 	       kgSortList(tw);
