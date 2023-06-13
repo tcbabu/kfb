@@ -223,7 +223,7 @@ char *kgCheckFileType(char *name) {
 	char wrk[500],tmp[500];
 	char *pt;
 	char *ret=NULL;
-	sprintf(wrk,"file %s",name);
+	sprintf(wrk,"file \'%s\'",name);
 //	printf("%s\n",wrk);
 	pp = popen(wrk,"r");
 	if(pp == NULL) return NULL;
@@ -267,6 +267,8 @@ char *kgCheckFileType(char *name) {
 	       
 static void Update1(void *Tmp) {
 	    void **th;
+	    void *bs=NULL;
+	    bs=kgOpenBusy(Tmp,500,650);
 	    kgSetString(T1,0,Folder1);
 	    th = (void **)kgGetList(X1);
 	    if(th != NULL) kgFreeThumbNails((ThumbNail **)th);
@@ -281,10 +283,13 @@ static void Update1(void *Tmp) {
 	    kgUpdateWidget(X1);
 	    kgUpdateWidget(Y1);
 	    kgUpdateWidget(T1);
+	    kgCloseBusy(bs);
 	    kgUpdateOn(Tmp);
 }
 static void Update2(void *Tmp) {
 	    void **th;
+	    void *bs=NULL;
+	    bs=kgOpenBusy(Tmp,900,650);
 	    kgSetString(T2,0,Folder2);
 	    th = (void **)kgGetList(X2);
 	    if(th != NULL) kgFreeThumbNails((ThumbNail **)th);
@@ -299,6 +304,7 @@ static void Update2(void *Tmp) {
 	    kgUpdateWidget(X2);
 	    kgUpdateWidget(Y2);
 	    kgUpdateWidget(T2);
+	    kgCloseBusy(bs);
 	    kgUpdateOn(Tmp);
 }
 #if 1
@@ -473,6 +479,7 @@ static int CopyItems(void *Tmp,void *fw) {
   char *fret=NULL;
   int sid,did;
   int same=0;
+  if(!kgCheckMenu(Tmp,400,400,"Copy Selected",0)) return 0;
   if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
   if(strcmp(Folder2,"/") !=0) strcpy(Dir2,Folder2);
   sid = kgGetWidgetId(Tmp,fw);
@@ -518,6 +525,7 @@ static int MoveItems(void *Tmp,void *fw) {
   char *fret=NULL;
   int sid,did;
   int same=0;
+  if(!kgCheckMenu(Tmp,400,400,"Move Selected",0)) return 0;
   if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
   if(strcmp(Folder2,"/") !=0) strcpy(Dir2,Folder2);
   sid = kgGetWidgetId(Tmp,fw);
@@ -567,6 +575,7 @@ static int RemoveItems(void *Tmp,void *fw) {
   char *fret=NULL;
   int sid,did;
   int same=0;
+  if(!kgCheckMenu(Tmp,400,400,"Remove Selected",0)) return 0;
   if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
   if(strcmp(Folder2,"/") !=0) strcpy(Dir2,Folder2);
   sid = kgGetWidgetId(Tmp,fw);
