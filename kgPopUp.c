@@ -1,4 +1,5 @@
 #include <kulina.h>
+static int retval=0;
 int  kgPopUpMenubrowser1callback(int item,int i,void *Tmp) {
   /*********************************** 
     item : selected item (1 to max_item) 
@@ -10,6 +11,7 @@ int  kgPopUpMenubrowser1callback(int item,int i,void *Tmp) {
   D = (DIALOG *)Tmp;
   pt = D->pt;
   X = (DIX *)kgGetWidget(Tmp,i);
+  retval=item;
   switch(item) {
     case 1: 
       break;
@@ -77,6 +79,7 @@ int kgPopUpMenuCallBack(void *Tmp,void *tmp) {
   int ret = 0;
   DIALOG *D;
   KBEVENT *kbe;
+  DIX  *X;
   D = (DIALOG *)Tmp;
   kbe = (KBEVENT *)tmp;
   if(kbe->event ==1) {
@@ -84,6 +87,8 @@ int kgPopUpMenuCallBack(void *Tmp,void *tmp) {
 	    ret =1;
     }
   }
+  X = (DIX *)kgGetNamedWidget(Tmp,"PopUp");
+  retval=0;
   return ret;
 }
 int kgPopUpMenuResizeCallBack(void *Tmp) {
@@ -284,6 +289,8 @@ int RunkgPopUpMenu(void *arg,int xo,int yo,char **menu) {
    v[0]=(void *)(&v0);
    void *pt=NULL; /* pointer to send any extra information */
    pt = (void *)menu;
+   retval=v0;
    kgPopUpMenu(arg,v,pt ,xo,yo);
-   return v0;
+   printf("V = %d\n",retval);
+   return retval;
 }

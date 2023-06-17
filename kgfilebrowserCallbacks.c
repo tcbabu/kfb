@@ -11,7 +11,7 @@ static char Folder2[300],Home2[300]="";
 static char Trash[300];
 static void *folderimg=NULL;
 static void *fileimg=NULL,*musicimg=NULL,*videoimg=NULL,
-	    *cimg=NULL,*tarimg=NULL,
+	    *cimg=NULL,*tarimg=NULL,*linkimg=NULL,
 	    *gzipimg=NULL,*exeimg=NULL,*binaryimg=NULL;
 
 static DIT *T1=NULL,*T2=NULL;
@@ -25,11 +25,14 @@ static ThumbNail **GetFileThumbNails(char *Folder,int size);
 int RunkgPopUpMenu(void *arg,int xo,int yo,char **menu);
 static char *MakeFileToken(char *src,char *check,char *token);
 static ThumbNail *MakeThumbNail(char *name,int size);
-
-char *FMenu1[8]={"Close","Copy selected files","Move selected files","Selected files to Trash","Delete selected files","Rename this","Backup this",NULL};
-char *FMenu2[8]={"Close","Copy selected files","Move selected files","Selected files to Trash","Delete selected files",NULL};
-char *DMenu1[5]= {"Close","Make new folder","Rename","Backup",NULL};
-char *DMenu2[5]= {"Close","Make new folder",NULL};
+#if 0
+char *FMenu1[8]={"Copy selected files","Move selected files","Selected files to Trash","Delete selected files","Rename this","Backup this","Create Link in Other",NULL};
+char *FMenu2[8]={"Copy selected files","Move selected files","Selected files to Trash","Delete selected files",NULL};
+char *DMenu1[5]= {"Make new folder","Rename","Backup","Create Link in Other",NULL};
+char *DMenu2[5]= {"Make new folder",NULL};
+#else
+char *FMenu1[4]={"Rename this","Backup this","Create Link in Other",NULL};
+#endif
 #define kgFree(pt) {if(pt!=NULL) free(pt);pt=NULL;}
 #define CHECKDELETESAME {\
 	 if(same) {\
@@ -196,6 +199,69 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
     }\
   }\
 }
+#define ProcessCreateLink(W,Sfolder,Dfolder) {\
+  int exist=0;\
+  int count=0;\
+  ThumbNail *Thnew=NULL;\
+  sprintf(job," Link Name in other side "); \
+  strcat(job,"%30s"); \
+  sprintf(to,"%-s",Th->name);\
+  gscanf(Tmp,job,to); \
+  sprintf(fname,"%-s/%-s",Dfolder,to);\
+  sprintf(from,"%-s/%-s",Sfolder,Th->name);\
+  if(kgCheckFileType(fname)== NULL) { \
+     CreateLink (from,fname);\
+     if(kgCheckFileType(fname)!= NULL) { \
+  	  void *Owid=NULL; \
+  	  ThumbNail *Oth=NULL;\
+          char *wname=NULL;\
+	  wname = kgGetWidgetName(Tmp,kgGetWidgetId(Tmp,W));\
+  	  if(strcmp(wname,"Xbox1")==0) {  Owid =X2; }\
+	  if(strcmp(wname,"Xbox2")==0) {  Owid =X1; }\
+  	  if(strcmp(wname,"Ybox1")==0) {  Owid =Y2; }\
+	  if(strcmp(wname,"Ybox2")==0) {  Owid =Y1; }\
+  	  Oth= (ThumbNail *)malloc(sizeof(ThumbNail));\
+          Oth->name=(char *)malloc(strlen(to)+1);\
+          strcpy(Oth->name,to);\
+          Oth->state=1; Oth->sw=0;\
+	  if(linkimg == NULL) \
+      	        linkimg = kgGetImageCopy(NULL,(void *)&link_str);\
+	  if( (Owid==X1)||(Owid==X2) ) {\
+	       Oth->img = kgThumbNailImage(linkimg,48,48);\
+	       if(same) {\
+                 kgAddThumbNail(X1,Oth,0);\
+                 kgAddThumbNail(X2,kgCopyThumbNail(Oth),0);\
+                 kgSortList(X1); \
+                 kgUpdateWidget(X1);\
+                 kgSortList(X2); \
+                 kgUpdateWidget(X2);\
+	       }\
+	       else {\
+                  kgAddThumbNail(Owid,Oth,0);\
+                  kgSortList(Owid); \
+                  kgUpdateWidget(Owid);\
+	       }\
+	  }\
+	  else {\
+	       Oth->img = kgThumbNailImage(linkimg,20,20);\
+	       if(same) {\
+                 kgAddThumbNail(Y1,Oth,0);\
+                 kgAddThumbNail(Y2,kgCopyThumbNail(Oth),0);\
+                 kgSortList(Y1); \
+                 kgUpdateWidget(Y1);\
+                 kgSortList(Y2); \
+                 kgUpdateWidget(Y2);\
+	       }\
+	       else {\
+                  kgAddThumbNail(Owid,Oth,0);\
+                  kgSortList(Owid); \
+                  kgUpdateWidget(Owid);\
+	       }\
+	  }\
+      }\
+      kgUpdateOn(Tmp);\
+  }\
+}
 #define ProcessOtherButtonClick(W,Menu1,Menu2) {\
 		  rval =-1; \
 		  kgGetClickedPosition(Tmp,&x,&y); \
@@ -205,11 +271,114 @@ char *DMenu2[5]= {"Close","Make new folder",NULL};
 		  ypos = y; \
 		  if(ypos >(yl-250) )ypos= yl-250; \
 		  if(xpos >(xl-250) )xpos= xl-250; \
+	          Th=NULL; \
 		  if(item>= 0)  { \
 		    Th= (ThumbNail *)List[item]; \
 		    rval = RunkgPopUpMenu(Tmp,xpos,ypos,Menu1); \
 		  } \
-		  else rval = RunkgPopUpMenu(Tmp,x,y,Menu2); \
+		  else rval = -1; \
+}
+
+static int CreateLink(char *src,char *des){
+	char *pt=NULL;
+	char *spt=NULL,*dpt=NULL;
+	char *pts=NULL,*ptd=NULL;
+	
+
+	
+	int scount=0,dcount=0,n=0,i;
+	char job[500];
+	char target[500];
+
+	if(strcmp(src,des)==0) return 0;
+	strcpy(target,des);
+	scount =0;
+	pt =src;
+	spt = NULL;
+	while(strstr(pt,"/") != NULL) {spt=pt;pt++;scount++;}
+	*spt='\0';
+	spt++;
+	dcount =0;
+	pt =des;
+	dpt = NULL;
+	while(strstr(pt,"/") != NULL) {dpt=pt;pt++;dcount++;}
+	*dpt='\0';
+	dpt++;
+	if(strcmp(src,des)==0) {
+		sprintf(job,"ln -sf %-s %-s/%-s",spt,des,dpt);
+//		system(job);
+		kgRunJob(job,NULL);
+		return 1;
+	}
+	pt = strstr(src,des);
+	if (pt!= NULL) { // destination is a top directory/self
+		pt += strlen(des);
+		if(*pt=='/')pt++;
+		sprintf(job,"ln -sf ./%-s/%-s %-s/%-s",pt,spt,des,dpt);
+//		system(job);
+		kgRunJob(job,NULL);
+		return 1;
+	}
+	pt = strstr(des,src);
+	if (pt!= NULL) { // destination is a sub directory
+		pt += strlen(src);
+		if (*pt=='/') pt++;
+		n =0;
+		while( (pt=strstr(pt,"/"))!= NULL) {
+			pt++;
+			if(*pt=='\0') break;
+			n++;
+		}
+		strcpy(job,"ln -sf ../");
+		i=0;
+		while(i< n) {i++;strcat(job,"../");}
+		pt= job + strlen(job);
+		sprintf(pt,"%-s %-s/%s",spt,des,dpt);
+		kgRunJob(job,NULL);
+                return 1;
+	}
+	n=0;
+	pts = strstr(src+1,"/");
+	ptd = strstr(des+1,"/");
+	while( (pts!=NULL) && (ptd != NULL) ) {
+		*pts = '\0';
+		*ptd = '\0';
+		if(strcmp(src,des)==0) {
+			n++;
+			src=pts+1;
+			des=ptd+1;
+	                pts = strstr(src,"/");
+                   	ptd = strstr(des,"/");
+			continue;
+		}
+		else {
+		  *pts = '/';
+		  *ptd = '/';
+		  break;
+		}
+
+	}
+	if(n==0) {
+	   sprintf(job,"ln -sf %-s/%-s %-s/%-s",src,spt,des,dpt);
+	   kgRunJob(job,NULL);
+           return 1;
+	}
+	else { // that is, some parts of paths are matching
+	  strcpy(job,"ln -sf ../");
+	  n =0;
+	  pt =des;
+	  while( (pt=strstr(pt,"/"))!= NULL) {
+			pt++;
+			if(*pt=='\0') break;
+			strcat(job,"../");
+			n++;
+          }
+          pt= job + strlen(job);
+	  sprintf(pt,"%-s/%-s %s",src,spt,target);
+	  kgRunJob(job,NULL);
+          return 1;
+	}
+
 }
 static char *MakeFileToken(char *src,char *check,char *token) {
 	char *ret=NULL;
@@ -261,6 +430,10 @@ char *kgCheckFileType(char *name) {
 		if (ret!= NULL) {pclose(pp);return ret;}
 		ret = MakeFileToken(tmp,"C source","Csource");
 		if (ret!= NULL) {pclose(pp);return ret;}
+		ret = MakeFileToken(tmp,"symbolic link ","Link");
+		if (ret!= NULL) {pclose(pp);return ret;}
+//		ret = MakeFileToken(tmp," SVG ","Image");
+//		if (ret!= NULL) {pclose(pp);return ret;}
 		ret = malloc(strlen("Unknown")+1);
 		strcpy(ret,"Unknown");
 		pclose(pp);
@@ -669,6 +842,7 @@ static ThumbNail *MakeThumbNail(char *name,int size) {
 static ThumbNail **GetFolderThumbNails(char *Folder,int size) {
     ThumbNail **th=NULL;
     char fullname[300];
+    char *fret;
     int i;
     void *imgo=NULL,*img=NULL;
     th = (ThumbNail **)kgFolderThumbNails(Folder);
@@ -680,9 +854,27 @@ static ThumbNail **GetFolderThumbNails(char *Folder,int size) {
 	    kgFreeImage(imgo);
       }
     }
+    if(linkimg == NULL) {
+      imgo = (void *)kgGetImageCopy(NULL,(void *)&link_str);
+      if(imgo != NULL) {
+	    linkimg = kgThumbNailImage(imgo,size,size);
+	    kgFreeImage(imgo);
+      }
+    }
     i=0;
     while(th[i] != NULL ) {
-	    th[i]->img = kgCopyImage(folderimg);
+	    sprintf(fullname,"%-s/%-s",Folder,th[i]->name);
+            fret = (char *)kgCheckFileType(fullname);
+	    switch (fret[0]) {
+	        case 'L':
+		  if(linkimg == NULL) 
+      		       linkimg = kgGetImageCopy(NULL,(void *)&link_str);
+	          th[i]->img = kgThumbNailImage(linkimg,size,size);
+		  break;
+		default:
+	          th[i]->img = kgCopyImage(folderimg);
+		  break;
+	    }
 	    i++;
     }
     return th;
@@ -704,6 +896,13 @@ static ThumbNail **GetFileThumbNails(char *Folder,int size) {
 	    kgFreeImage(imgo);
       }
     }
+    if(linkimg == NULL) {
+      imgo = (void *)kgGetImageCopy(NULL,(void *)&link_str);
+      if(imgo != NULL) {
+	    linkimg = kgThumbNailImage(imgo,size,size);
+	    kgFreeImage(imgo);
+      }
+    }
     i=0;
     while(th[i] != NULL ) {
 	    sprintf(fullname,"%-s/%-s",Folder,th[i]->name);
@@ -717,6 +916,11 @@ static ThumbNail **GetFileThumbNails(char *Folder,int size) {
 		    kgFreeImage(imgo);
 		  }
 		  else th[i]->img = kgCopyImage(fileimg);
+		  break;
+	        case 'L':
+		  if(linkimg == NULL) 
+      		       linkimg = kgGetImageCopy(NULL,(void *)&link_str);
+	          th[i]->img = kgThumbNailImage(linkimg,size,size);
 		  break;
 	        case 'M':
 		  if(musicimg == NULL) 
@@ -1223,6 +1427,7 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
   xl = D->xl;
   if(strcmp(Folder1,Folder2)==0) same=1;
 
+
 #if 1
   if((kbe->event ==1)||(kbe->event == 3)) {
     ThumbNail *Th=NULL;
@@ -1232,15 +1437,17 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 	  wid = kgGetClickedWidget(Tmp);
 
 	  if(kgCheckWidgetName(wid,"Xbox1")) {
-		  ProcessOtherButtonClick(X1,DMenu1,DMenu2);
+		  ProcessOtherButtonClick(X1,FMenu1,FMenu1);
 		  switch(rval) {
-			  case 2:
-			    ProcessMakeFolder(Folder1,X1);
-			    break;
 			  case 3:
+			    if(Th != NULL) {
+			      ProcessCreateLink(X1,Folder1,Folder2);
+		            }
+			    break;
+			  case 1:
 			    ProcessRename(Folder1,X1);
 			    break;
-			  case 4:
+			  case 2:
 			    ProcessBackup(Folder1,X1);
 			    break;
 			  default:
@@ -1248,13 +1455,18 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 		  }
 	  }
 	  if(kgCheckWidgetName(wid,"Ybox1")) {
-	          ProcessOtherButtonClick(Y1,FMenu1,FMenu2);
+	          ProcessOtherButtonClick(Y1,FMenu1,FMenu1);
 		  switch(rval) {
-			  case 6:
+			  case 1:
 			    ProcessRename(Folder1,Y1);
 			    break;
-			  case 7:
+			  case 2:
 			    ProcessBackup(Folder1,Y1);
+			    break;
+			  case 3:
+			    if(Th != NULL) {
+			      ProcessCreateLink(Y1,Folder1,Folder2);
+		            }
 			    break;
 			  default:
 			    break;
@@ -1262,15 +1474,17 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 
 	  }
 	  if(kgCheckWidgetName(wid,"Xbox2")) {
-		  ProcessOtherButtonClick(X2,DMenu1,DMenu2);
+		  ProcessOtherButtonClick(X2,FMenu1,FMenu1);
 		  switch(rval) {
-			  case 2:
-			    ProcessMakeFolder(Folder2,X2);
-			    break;
 			  case 3:
+			    if(Th != NULL) {
+			      ProcessCreateLink(X2,Folder2,Folder1);
+		            }
+			    break;
+			  case 1:
 			    ProcessRename(Folder2,X2);
 			    break;
-			  case 4:
+			  case 2:
 			    ProcessBackup(Folder2,X2);
 			    break;
 			  default:
@@ -1278,13 +1492,18 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 		  }
 	  }
 	  if(kgCheckWidgetName(wid,"Ybox2")) {
-	          ProcessOtherButtonClick(Y2,FMenu1,FMenu2);
+	          ProcessOtherButtonClick(Y2,FMenu1,FMenu1);
 		  switch(rval) {
-			  case 6:
+			  case 1:
 			    ProcessRename(Folder2,Y2);
 			    break;
-			  case 7:
+			  case 2:
 			    ProcessBackup(Folder2,Y2);
+			    break;
+			  case 3:
+			    if(Th != NULL) {
+			      ProcessCreateLink(Y2,Folder2,Folder1);
+		            }
 			    break;
 			  default:
 			    break;
