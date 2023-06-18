@@ -127,10 +127,11 @@ char *FMenu1[4]={"Rename this","Backup this","Create Link in Other",NULL};
   strcpy(to,Th->name); \
   strcat(to,".bak");\
   gscanf(Tmp,job,to); \
+  if(!kgCheckMenu(Tmp,400,400,"Make Backup",0)){ \
   sprintf(job,"cp -r  %-s/%-s %-s/%-s ",Folder,from,Folder,to); \
   sprintf(fname,"%-s/%-s",Folder,to); \
   if( kgCheckFileType(fname) != NULL) exist=1;\
-  bs = kgOpenBusy(Tmp,600,650);\
+  bs = kgOpenBusy(Tmp,600,250);\
   kgRunJob(job,NULL);\
   kgCloseBusy(bs);\
   if(kgCheckFileType(fname)!= NULL) { \
@@ -158,6 +159,7 @@ char *FMenu1[4]={"Rename this","Backup this","Create Link in Other",NULL};
       kgUpdateWidget(W);\
       kgUpdateOn(Tmp);\
     }\
+  }\
   }\
 }
 #define ProcessMakeFolder(Folder,W) {\
@@ -444,7 +446,7 @@ char *kgCheckFileType(char *name) {
 static void Update1(void *Tmp) {
 	    void **th;
 	    void *bs=NULL;
-	    bs=kgOpenBusy(Tmp,500,650);
+	    bs=kgOpenBusy(Tmp,500,250);
 	    kgSetString(T1,0,Folder1);
 	    th = (void **)kgGetList(X1);
 	    if(th != NULL) kgFreeThumbNails((ThumbNail **)th);
@@ -455,17 +457,17 @@ static void Update1(void *Tmp) {
 	    th = (void **)kgGetList(Y1);
 	    if(th != NULL) kgFreeThumbNails((ThumbNail **)th);
             th = (void **)GetFileThumbNails(Folder1,48);
+	    kgCloseBusy(bs);
 	    kgSetList(Y1,th);
 	    kgUpdateWidget(X1);
 	    kgUpdateWidget(Y1);
 	    kgUpdateWidget(T1);
-	    kgCloseBusy(bs);
 	    kgUpdateOn(Tmp);
 }
 static void Update2(void *Tmp) {
 	    void **th;
 	    void *bs=NULL;
-	    bs=kgOpenBusy(Tmp,900,650);
+	    bs=kgOpenBusy(Tmp,900,250);
 	    kgSetString(T2,0,Folder2);
 	    th = (void **)kgGetList(X2);
 	    if(th != NULL) kgFreeThumbNails((ThumbNail **)th);
@@ -477,10 +479,10 @@ static void Update2(void *Tmp) {
 	    if(th != NULL) kgFreeThumbNails((ThumbNail **)th);
             th = (void **)GetFileThumbNails(Folder2,48);
 	    kgSetList(Y2,th);
+	    kgCloseBusy(bs);
 	    kgUpdateWidget(X2);
 	    kgUpdateWidget(Y2);
 	    kgUpdateWidget(T2);
-	    kgCloseBusy(bs);
 	    kgUpdateOn(Tmp);
 }
 #if 1
@@ -521,7 +523,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       char *ret1;
 		       th = kgGetThumbNail(fw,item);
 		       sprintf(job,"rm -rf %-s/%-s",sdir,th->name);
-                       bs = kgOpenBusy(Tmp,600,650);
+                       bs = kgOpenBusy(Tmp,600,250);
 		       kgRunJob(job,NULL);
                        kgCloseBusy(bs);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
@@ -539,7 +541,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       char *ret1;
 		       th = kgGetThumbNail(fw,item);
 		       sprintf(job,"mv %-s/%-s %s",sdir,th->name,Trash);
-                       bs = kgOpenBusy(Tmp,600,650);
+                       bs = kgOpenBusy(Tmp,600,250);
 		       kgRunJob(job,NULL);
                        kgCloseBusy(bs);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
@@ -565,7 +567,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       sprintf(flname,"%-s/%-s",sdir,th->name);
 		       ret=kgCheckFileType(flname);
 		       sprintf(job,"mv %-s/%-s %s",sdir,th->name,ddir);
-                       bs = kgOpenBusy(Tmp,600,650);
+                       bs = kgOpenBusy(Tmp,600,250);
 		       kgRunJob(job,NULL);
 		       kgCloseBusy(bs);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
@@ -596,43 +598,55 @@ static int DragItem(void *Tmp,void *fw,int item) {
 //	       printf("%s | %s\n",src,des);
 	       if( (strcmp(src,"Xbox1")==0) &&(strcmp(des,"Xbox2")==0)) {
 		 if(same) return 1;
+                 if(kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0)){ 
                  sprintf(job,"cp -r %-s/%-s %-s",
 			 Dir1,kgGetThumbNailName(fw,item),Folder2);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder2,kgGetThumbNailName(fw,item));
 		         goto jump;
+		 }
+		 return 1;
 	       }
 	       if( (strcmp(src,"Ybox1")==0) &&(strcmp(des,"Ybox2")==0)) {
 		 if(same) return 1;
+                 if(kgCheckMenu(Tmp,400,400,"Copy File;may overwrite",0)){ 
                  sprintf(job,"cp -r %-s/%-s %-s",
 			 Dir1,kgGetThumbNailName(fw,item),Folder2);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder2,kgGetThumbNailName(fw,item));
 		         goto jump;
+		 }
+		 return 1;
 	       }
 	       if( (strcmp(src,"Xbox2")==0) &&(strcmp(des,"Xbox1")==0)) {
    	         void *bs;
 		 if(same) return 1;
+                 if(kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0)){ 
                  sprintf(job,"cp -r %-s/%-s %-s",
 			 Dir2,kgGetThumbNailName(fw,item),Folder1);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder1,kgGetThumbNailName(fw,item));
 		         goto jump;
+		 }
+		 return 1;
 	       }
 	       if( (strcmp(src,"Ybox2")==0) &&(strcmp(des,"Ybox1")==0)) {
 		 if(same) return 1;
+                 if(kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0)){ 
                  sprintf(job,"cp -r %-s/%-s %-s",
 			 Dir2,kgGetThumbNailName(fw,item),Folder1);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder1,kgGetThumbNailName(fw,item));
 		         goto jump;
+		 }
+		 return 1;
 	       }
 	       return 1;
      jump:
 #if 0
                printf("%s\n",job);
 #endif
-               bs = kgOpenBusy(Tmp,600,650);
+               bs = kgOpenBusy(Tmp,600,250);
                kgRunJob(job,NULL);
 	       kgCloseBusy(bs);
 	       if(kgCheckFileType(destloc)==NULL) return 1;
