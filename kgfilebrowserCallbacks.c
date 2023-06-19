@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "icons.c"
+static void *Dtmp;
+void *Runinfobox(void *parent,void *arg);
+void *Runstatbox(void *parent,void *arg);
 
 
 static char Folder1[300],Home1[300]="";
@@ -31,7 +34,7 @@ char *FMenu2[8]={"Copy selected files","Move selected files","Selected files to 
 char *DMenu1[5]= {"Make new folder","Rename","Backup","Create Link in Other",NULL};
 char *DMenu2[5]= {"Make new folder",NULL};
 #else
-char *FMenu1[4]={"Rename this","Backup this","Create Link in Other",NULL};
+char *FMenu1[5]={"Rename this","Backup this","Create Link in Other","Info",NULL};
 #endif
 #define kgFree(pt) {if(pt!=NULL) free(pt);pt=NULL;}
 #define CHECKDELETESAME {\
@@ -279,6 +282,59 @@ char *FMenu1[4]={"Rename this","Backup this","Create Link in Other",NULL};
 		    rval = RunkgPopUpMenu(Tmp,xpos,ypos,Menu1); \
 		  } \
 		  else rval = -1; \
+}
+#define ProcessInfo(Folder) { \
+	strcpy(job,"stat ");\
+	strcat(job,Folder);\
+	strcat(job,"/");\
+	strcat(job,Th->name);\
+	kgRunJob(job,ProcessStatData);\
+}
+
+static int GetLine(int pip0,char *buff){
+     unsigned char ch;
+     fd_set rfds;
+     struct timeval tv;
+     int retval,chnl,status,i;
+     int ret,val;
+     chnl = pip0;
+     i=0;
+     FD_ZERO(&rfds);
+     FD_SET(pip0,&rfds);
+     while(1) {
+       tv.tv_sec = 30;
+       tv.tv_usec =0;
+       ret=0;
+       retval = select(chnl+1,&rfds,NULL,NULL,&tv);
+       if(retval < 0) {ret=0;break;}
+       val=1;
+       if((retval> 0)&&(FD_ISSET(chnl,&rfds))){
+         if(read(chnl,&ch,1) != 1){
+           ret=0;
+           break;
+         }
+         buff[i++]=ch;
+         if(i>490) i=490;
+         if( (ch=='\n')||(ch=='\r')) {ret=ch;break;}
+       }
+       else {ret=-1;break;}
+     }
+     buff[i]='\0';
+     return ret;
+}
+static int ProcessData(int rid,int wid,int pid) {
+	int pvals[2];
+	pvals[0]=rid;
+	pvals[1] = pid;
+	Runinfobox(Dtmp,pvals);
+	return 1;
+}
+static int ProcessStatData(int rid,int wid,int pid) {
+	int pvals[2];
+	pvals[0]=rid;
+	pvals[1] = pid;
+	Runstatbox(Dtmp,pvals);
+	return 1;
 }
 
 static int CreateLink(char *src,char *des){
@@ -599,7 +655,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 	       if( (strcmp(src,"Xbox1")==0) &&(strcmp(des,"Xbox2")==0)) {
 		 if(same) return 1;
                  if(kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0)){ 
-                 sprintf(job,"cp -r %-s/%-s %-s",
+                 sprintf(job,"cp -rv  %-s/%-s %-s",
 			 Dir1,kgGetThumbNailName(fw,item),Folder2);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder2,kgGetThumbNailName(fw,item));
@@ -610,7 +666,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 	       if( (strcmp(src,"Ybox1")==0) &&(strcmp(des,"Ybox2")==0)) {
 		 if(same) return 1;
                  if(kgCheckMenu(Tmp,400,400,"Copy File;may overwrite",0)){ 
-                 sprintf(job,"cp -r %-s/%-s %-s",
+                 sprintf(job,"cp -rv %-s/%-s %-s",
 			 Dir1,kgGetThumbNailName(fw,item),Folder2);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder2,kgGetThumbNailName(fw,item));
@@ -622,7 +678,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
    	         void *bs;
 		 if(same) return 1;
                  if(kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0)){ 
-                 sprintf(job,"cp -r %-s/%-s %-s",
+                 sprintf(job,"cp -rv %-s/%-s %-s",
 			 Dir2,kgGetThumbNailName(fw,item),Folder1);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder1,kgGetThumbNailName(fw,item));
@@ -646,9 +702,9 @@ static int DragItem(void *Tmp,void *fw,int item) {
 #if 0
                printf("%s\n",job);
 #endif
-               bs = kgOpenBusy(Tmp,600,250);
-               kgRunJob(job,NULL);
-	       kgCloseBusy(bs);
+//               bs = kgOpenBusy(Tmp,600,250);
+               kgRunJob(job,ProcessData);
+//	       kgCloseBusy(bs);
 	       if(kgCheckFileType(destloc)==NULL) return 1;
 	       kgAddThumbNail(tw,kgCopyThumbNail(kgGetThumbNail(fw,item)),0);
 	       kgSortList(tw);
@@ -1313,6 +1369,7 @@ int kgfilebrowserinit(void *Tmp) {
   int ret = 1;
   DIALOG *D;void *pt;
   D = (DIALOG *)Tmp;
+  Dtmp = Tmp;
   pt = D->pt;
   T1 = (DIT *)kgGetNamedWidget(Tmp,"Tbox1");
   T2 = (DIT *)kgGetNamedWidget(Tmp,"Tbox2");
@@ -1464,6 +1521,9 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 			  case 2:
 			    ProcessBackup(Folder1,X1);
 			    break;
+			  case 4:
+			    ProcessInfo(Folder1);
+			    break;
 			  default:
 			    break;
 		  }
@@ -1481,6 +1541,9 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 			    if(Th != NULL) {
 			      ProcessCreateLink(Y1,Folder1,Folder2);
 		            }
+			    break;
+			  case 4:
+			    ProcessInfo(Folder1);
 			    break;
 			  default:
 			    break;
@@ -1501,6 +1564,9 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 			  case 2:
 			    ProcessBackup(Folder2,X2);
 			    break;
+			  case 4:
+			    ProcessInfo(Folder2);
+			    break;
 			  default:
 			    break;
 		  }
@@ -1518,6 +1584,9 @@ int kgfilebrowserCallBack(void *Tmp,void *tmp) {
 			    if(Th != NULL) {
 			      ProcessCreateLink(Y2,Folder2,Folder1);
 		            }
+			    break;
+			  case 4:
+			    ProcessInfo(Folder2);
 			    break;
 			  default:
 			    break;

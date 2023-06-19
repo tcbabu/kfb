@@ -684,7 +684,7 @@ int kgfilebrowser( void *parent,void **v,void *pt) {
   D.Shapexpm = NULL;    /*  PNG/jpeg file for window shape;Black color will not be drawn */
   D.parent = parent;    /*  1 for not showing in task bar*/
   D.pt = pt;    /*  any data to be passed by user*/
-  strcpy(D.name,"Kulina File Browser ver 1.0");    /*  Dialog name you may change */
+  strcpy(D.name,"Kulina File Browser ver 1.1");    /*  Dialog name you may change */
   if(D.fullscreen!=1) {    /*  if not fullscreen mode */
      int xres,yres; 
      kgDisplaySize(&xres,&yres); 
