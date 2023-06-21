@@ -4,9 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "icons.c"
+#define Free(x) if(x!=NULL) free(x);
 static void *Dtmp;
 void *Runinfobox(void *parent,void *arg);
 void *Runstatbox(void *parent,void *arg);
+int kgFilterString(char *s, char *fltr);
 
 
 static char Folder1[300],Home1[300]="";
@@ -21,6 +23,7 @@ static DIT *T1=NULL,*T2=NULL;
 static DIY *X1=NULL,*X2=NULL;
 static DIY *Y1=NULL,*Y2=NULL;
 static DIY *TR=NULL;
+static char Filter[200];
 int SetThumbNailImages(ThumbNail **th,int size);
 char *kgCheckFileType(char *name);
 static ThumbNail **GetFolderThumbNails(char *Folder,int size);
@@ -291,7 +294,127 @@ char *FMenu1[5]={"Rename this","Backup this","Create Link in Other","Info",NULL}
 	kgRunJob(job,ProcessStatData);\
 }
 
-static int GetLine(int pip0,char *buff){
+static int _check_for_string(char *s,char *chk) {
+  int ls,lchk,i,k,count,ret=0,j,ch;
+  ls = strlen(s);
+  k=0;while( (chk[k]!='\0')&&(chk[k]!='*')&&(chk[k]!='?')) k++;
+  ch = chk[k];chk[k]='\0';
+  lchk = strlen(chk);
+  if(lchk>ls) return 0;
+  for(i=0;i<(ls-lchk+1);i++) {
+   count=0;
+#ifdef ZORDOS
+   for(j=0;j<lchk;j++) if( s[i+j] == toupper(chk[j]) )count++;
+#else
+   for(j=0;j<lchk;j++) if( s[i+j] == chk[j] )count++;
+#endif
+   if(count==lchk ) {ret=i+lchk; break;}
+  }
+  chk[k]=ch;
+  return ret;
+}
+static int _check_for_start_string(char *s,char *chk) {
+  int ls,lchk,i,count,ret=0,j,ch;
+  ls = strlen(s);
+  i=0;while( (chk[i]!='\0')&&(chk[i]!='*')&&(chk[i]!='?')) i++;
+  ch = chk[i];chk[i]='\0';
+  lchk = strlen(chk);
+  if(lchk<=ls) {
+    count=0;
+    for(j=0;j<lchk;j++) if( s[j] == chk[j] )count++; else break;
+    if(count==lchk ) {ret=lchk; }
+  }
+  chk[i]=ch;
+  return ret;
+}
+static int _skip_string(char *chk) {
+  int i=0;
+  while( (chk[i]!='\0')&&(chk[i]!='*')&&(chk[i]!='?')) i++;
+  return i;
+}
+/* checking for character
+   if found position is returned
+*/
+static int _check_for_char(char *s,char ch) {
+ int i=0;
+ while( (s[i]!= ch)&&(s[i]!='\0')) i++;
+ if(s[i]=='\0') return 0;
+ else return i;
+}
+static int uiFilterOtherOptions(char *s, char *fltr){
+  int pos,skip;
+  if(fltr[0]==' ') return 1;
+  
+  if(fltr[0]=='\0'){
+     if(s[0]=='\0') return 1;
+     else return 0;
+  }
+  if(fltr[0]=='*') {
+    if(fltr[1]=='.') {
+      pos = _check_for_char(s,'.');
+      if(pos != 0) return uiFilterOtherOptions(s+pos+1,fltr+2);
+      else return 0;
+    }
+    else {
+      if(fltr[1]=='\0') return 1;
+      else if(fltr[1]=='?'){
+              return uiFilterOtherOptions(s+1,fltr+2);
+           }
+           else {
+              pos = _check_for_string(s,fltr+1);
+              if(pos == 0) {
+                 return 0;
+              }
+              else {
+                 skip = _skip_string(fltr+1);
+                 return uiFilterOtherOptions(s+pos,fltr+1+skip);
+              }
+           }
+    }
+  }
+  else {
+      if(fltr[0]=='?'){
+              return uiFilterOtherOptions(s+1,fltr+1);
+      }
+      else {
+              pos = _check_for_start_string(s,fltr);
+              if(pos == 0) {
+                 return 0;
+              }
+              else {
+                 skip = _skip_string(fltr);
+                 return uiFilterOtherOptions(s+pos,fltr+skip);
+              }
+      }
+  }
+}
+int kgFilterString(char *s, char *fltr){
+  int i,j,ret=0;
+  char *buf;
+  if(strcmp("*",fltr)==0) return 1;
+  if(strcmp("*.*",fltr)==0){
+     i=0;
+     while(s[i]!='\0') if(s[i++]=='.') return 1;
+     return 0;
+  }
+  else{
+    buf= (char *)Malloc(strlen(fltr)+1);
+//    strcpy(buf,fltr);
+    i=0;
+    while(1) {
+      j=0;
+      while(fltr[i]==' ') i++;
+      if(fltr[i] < ' ') break;
+      while(fltr[i]>' ') buf[j++]=fltr[i++];
+      buf[j]='\0';
+      ret =  uiFilterOtherOptions(s,buf);
+      if(ret) break;
+    }
+    Free(buf);
+    return ret;
+  }
+} 
+static int kgGetLine(int pip0,char *buff){
      unsigned char ch;
      fd_set rfds;
      struct timeval tv;
@@ -905,7 +1028,7 @@ static int CopyItems(void *Tmp,void *fw) {
           kgAddThumbNail(tw,kgCopyThumbNail(th[i]),0);
 	}
       }
-      if(GetLine(Pips[0],Msg)) break;
+      if(kgGetLine(Pips[0],Msg)) break;
       i++;
     }
     CloseMonitor(Pips);
@@ -964,7 +1087,7 @@ static int MoveItems(void *Tmp,void *fw) {
 	  continue;
 	}
       }
-      if(GetLine(Pips[0],Msg)) break;
+      if(kgGetLine(Pips[0],Msg)) break;
       i++;
     }
     CloseMonitor(Pips);
@@ -1537,6 +1660,7 @@ int kgfilebrowserinit(void *Tmp) {
   pt = D->pt;
   T1 = (DIT *)kgGetNamedWidget(Tmp,"Tbox1");
   T2 = (DIT *)kgGetNamedWidget(Tmp,"Tbox2");
+  strcpy(Filter,"*");
 #if 1
 //  strcpy(Home1,getenv("HOME"));
   if(Home1[0]=='\0') getcwd(Home1,299);
@@ -1847,6 +1971,7 @@ int  kgfilebrowserbutton6callback(int butno,int i,void *Tmp) {
   DIALOG *D;DIN *B; 
   int n,ret =0,j=0; 
   DIY *Y=NULL;
+  char Prompt[200];
   ThumbNail **th=NULL;
   D = (DIALOG *)Tmp;
   B = (DIN *)kgGetWidget(Tmp,i);
@@ -1856,7 +1981,14 @@ int  kgfilebrowserbutton6callback(int butno,int i,void *Tmp) {
     case 1: 
 	    th= (ThumbNail **)kgGetList(Y);
 	    j=0;
-	    while(th[j]!= NULL) { kgSetSwitch(Y,j,1);j++;};
+	    strcpy(Prompt,"Simple Files Filter %20s");
+	    gscanf(Tmp,Prompt,Filter);
+	    while(th[j]!= NULL) {
+		    if(kgFilterString(th[j]->name,Filter))
+    		       kgSetSwitch(Y,j,1);
+		    j++;
+	    };
+	    strcpy(Filter,"*");
 	    kgUpdateWidget(Y);
 	    kgUpdateOn(Tmp);
       break;
@@ -1891,6 +2023,7 @@ int  kgfilebrowserbutton7callback(int butno,int i,void *Tmp) {
   int n,ret =0,j=0; 
   ThumbNail **th=NULL;
   DIY *Y=NULL;
+  char Prompt[200];
   D = (DIALOG *)Tmp;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
@@ -1899,7 +2032,14 @@ int  kgfilebrowserbutton7callback(int butno,int i,void *Tmp) {
     case 1: 
 	    th= (ThumbNail **)kgGetList(Y);
 	    j=0;
-	    while(th[j]!= NULL) { kgSetSwitch(Y,j,1);j++;};
+	    strcpy(Prompt,"Simple Files Filter %20s");
+	    gscanf(Tmp,Prompt,Filter);
+	    while(th[j]!= NULL) {
+		    if(kgFilterString(th[j]->name,Filter))
+    		       kgSetSwitch(Y,j,1);
+		    j++;
+	    };
+	    strcpy(Filter,"*");
 	    kgUpdateWidget(Y);
 	    kgUpdateOn(Tmp);
       break;

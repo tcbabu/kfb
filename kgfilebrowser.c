@@ -230,7 +230,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   e8[0].img=NULL;
   DIT t8 = { 
     't',
-    897,20,  
+    897,21,  
     1297,53,
     20, 
     1,1, 
@@ -366,7 +366,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   BUT_STR  *butn14=NULL; 
   butn14= (BUT_STR *)malloc(sizeof(BUT_STR)*5);
   butn14[0].sw=1;
-  strcpy(butn14[0].title,(char *)"Select all");
+  strcpy(butn14[0].title,(char *)"Select Files");
   butn14[0].xpmn=NULL;
   butn14[0].xpmp=NULL;
   butn14[0].xpmh=NULL;
@@ -419,7 +419,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   BUT_STR  *butn15=NULL; 
   butn15= (BUT_STR *)malloc(sizeof(BUT_STR)*5);
   butn15[0].sw=1;
-  strcpy(butn15[0].title,(char *)"Select all");
+  strcpy(butn15[0].title,(char *)"Select Files");
   butn15[0].xpmn=NULL;
   butn15[0].xpmp=NULL;
   butn15[0].xpmh=NULL;
@@ -471,26 +471,27 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   b15.item = -1;
   T_ELMT *e16  ; 
   e16 =(T_ELMT *)malloc(sizeof(T_ELMT)*1);
-  e16[0].fmt = (char *)malloc(19);
-  strcpy(e16[0].fmt,(char *)"Filter(simple)%30s");
+  e16[0].fmt = (char *)malloc(24);
+  strcpy(e16[0].fmt,(char *)"Filters , separated%15s");
   e16[0].v=(void *)v[7];
   e16[0].sw=1;
   e16[0].noecho=0;
   e16[0].img=NULL;
   DIT t16 = { 
     't',
-    502,18,  
-    895,54,
+    502,21,  
+    874,53,
     20, 
     1,1, 
     e16,
     1,1,
-    NULL,kgfilebrowsertextbox3callback,1,1,18,9 /* args,Call back */
+    NULL,kgfilebrowsertextbox3callback,0,1,18,9 /* args,Call back */
   };
   strcpy(t16.Wid,(char *)"FilterBox");
   t16.pt=NULL;
   t16.type = 0;
   t16.item = -1;
+  t16.hide = 1;
   dtmp = D->d;
   i=0;
   if(dtmp!= NULL) while(dtmp[i].t!=NULL)i++;
@@ -684,7 +685,7 @@ int kgfilebrowser( void *parent,void **v,void *pt) {
   D.Shapexpm = NULL;    /*  PNG/jpeg file for window shape;Black color will not be drawn */
   D.parent = parent;    /*  1 for not showing in task bar*/
   D.pt = pt;    /*  any data to be passed by user*/
-  strcpy(D.name,"Kulina File Browser ver 1.2");    /*  Dialog name you may change */
+  strcpy(D.name,"Kulina File Browser ver 1.3");    /*  Dialog name you may change */
   if(D.fullscreen!=1) {    /*  if not fullscreen mode */
      int xres,yres; 
      kgDisplaySize(&xres,&yres); 
@@ -722,7 +723,7 @@ void *Runkgfilebrowser(void *arg) {
    char  v4[500]="" ;
    char  v5[500]="" ;
    int   v6 = 1;
-   char  v7[500]="" ;
+   char  v7[500]="*" ;
    void* v[8];
    v[0]=(void *)(&v0);
    v[1]=(void *)(&v1);
