@@ -60,15 +60,18 @@ int  infoboxsplbutton1callback(int butno,int i,void *Tmp) {
    ***********************************/ 
   DIALOG *D;DIL *B; 
   int n,ret=1; 
-  int *pt,pid;
+  int *pt,pid,wid;
   D = (DIALOG *)Tmp;
   B = (DIL *) kgGetWidget(Tmp,i);
   pt = (int *)(D->pt);
   pid = pt[1];
+  wid = pt[3];
+ 
   n = B->nx;
   switch(butno) {
     case 1: 
-	    kill(pid,SIGTERM);
+	    if(pid > 0) kill(pid,SIGTERM);
+	    if(wid > 0) write(wid,"##EXIT\n",8);
       break;
   }
   return ret;
@@ -156,12 +159,14 @@ int infoboxWaitCallBack(void *Tmp) {
   int rid;
   DII *I;
   DIALOG *D;
+  int incr=100;
   D = (DIALOG *)Tmp;
   pt = (int *)(D->pt);
   rid = pt[0];
+  incr= pt[2];
   I = (DII *)kgGetNamedWidget(Tmp,"InfoBox");
   if( GetLine(rid,buf)) {
-		count = (count+1)%100;
+		count = (count+1)%incr;
 		if(!count){
 		    sscanf(buf,"%s",buf1);
 //	       	    kgExtractBaseName(buf1,buf);

@@ -130,8 +130,8 @@ char *FMenu1[5]={"Rename this","Backup this","Create Link in Other","Info",NULL}
   strcpy(to,Th->name); \
   strcat(to,".bak");\
   gscanf(Tmp,job,to); \
-  if(!kgCheckMenu(Tmp,400,400,"Make Backup",0)){ \
-  sprintf(job,"cp -r  %-s/%-s %-s/%-s ",Folder,from,Folder,to); \
+  if(kgCheckMenu(Tmp,400,400,"Make Backup",0)){ \
+  sprintf(job,"cp -rf  %-s/%-s %-s/%-s ",Folder,from,Folder,to); \
   sprintf(fname,"%-s/%-s",Folder,to); \
   if( kgCheckFileType(fname) != NULL) exist=1;\
   bs = kgOpenBusy(Tmp,600,250);\
@@ -302,11 +302,11 @@ static int GetLine(int pip0,char *buff){
      FD_ZERO(&rfds);
      FD_SET(pip0,&rfds);
      while(1) {
-       tv.tv_sec = 30;
-       tv.tv_usec =0;
+       tv.tv_sec = 0;
+       tv.tv_usec =200000;
        ret=0;
        retval = select(chnl+1,&rfds,NULL,NULL,&tv);
-       if(retval < 0) {ret=0;break;}
+       if(retval < 0) {ret=-1;break;}
        val=1;
        if((retval> 0)&&(FD_ISSET(chnl,&rfds))){
          if(read(chnl,&ch,1) != 1){
@@ -317,17 +317,97 @@ static int GetLine(int pip0,char *buff){
          if(i>490) i=490;
          if( (ch=='\n')||(ch=='\r')) {ret=ch;break;}
        }
-       else {ret=-1;break;}
+       else {ret=0;break;}
      }
      buff[i]='\0';
      return ret;
 }
+int kgRunFunction(int (*function)(void *),void *arg,int (*ProcessOut)(int,int,int)){
+   int ret =0;
+   FILE *fp,*fp1;
+   int pip[2],pid,status,pip2[2],argc;
+   char *args[100],buff[1000],pt[300];
+   char *ptr;
+   char *pgrpath=NULL;
+   int i=0,pos=0;
+   if( pipe(pip) < 0) return 0;
+   if( pipe(pip2) < 0) return 0;
+   pid = fork();
+   if(pid == 0) { /* child process */
+//     if(fork()!=0) exit(0); /* to avoid zombie */
+
+     close(pip2[1]);
+     close(pip[0]);
+     close(0);
+     dup(pip2[0]);
+//     close(pip2[0]);
+#if 1
+     close(1);
+     dup(pip[1]);
+#endif
+     close(2);
+     dup(pip[1]);
+  //   close(pip[1]);
+     if(function != NULL) function(arg);
+     fflush(stderr);
+     fflush(stdout);
+     exit(0);
+   }
+   else {   /* parent process */
+//     printf("Waiting pid: %d\n",pid);
+     close(pip2[0]);
+     close(pip[1]);
+     if(ProcessOut != NULL){
+        ret=ProcessOut(pip[0],pip2[1],pid);
+        printf("Killing %d\n",pid);
+        kill(pid,9);
+     }
+     waitpid(pid,&status,0);
+     return ret;
+   }
+}
 static int ProcessData(int rid,int wid,int pid) {
-	int pvals[2];
+	int pvals[4];
+	int incr=100;
 	pvals[0]=rid;
 	pvals[1] = pid;
+	pvals[2]= incr;
+	pvals[3]= wid;
 	Runinfobox(Dtmp,pvals);
 	return 1;
+}
+static int* MonitorProgress(void *Tmp,int pid) {
+	int pvals[4];
+	int incr=1;
+        int Pip1[2],Pip2[2];
+	int *Pips;
+        if( pipe(Pip1) < 0) return NULL;
+        if( pipe(Pip2) < 0) return NULL;
+	Pips= (int *) malloc(sizeof(int)*2);
+        if(fork()==0) {
+            close(Pip2[0]);
+            close(Pip1[1]);
+//	    MonitorProgress(Pip1[0],Pip2[1],0);
+     	    pvals[0]=Pip1[0];
+	    pvals[1] = pid;
+	    pvals[2]= incr;
+	    pvals[3]= Pip2[1];
+	    Runinfobox(Tmp,pvals);
+            close(Pip2[1]);
+            close(Pip1[0]);
+	    exit(0);
+        }
+        close(Pip2[1]);
+        close(Pip1[0]);
+        Pips[0]=Pip2[0];
+        Pips[1]=Pip1[1];
+	return Pips;
+}
+static int CloseMonitor(int *Pips) {
+    close(Pips[0]);
+    close(Pips[1]);
+    free(Pips);
+    return 1;
 }
 static int ProcessStatData(int rid,int wid,int pid) {
 	int pvals[2];
@@ -502,7 +582,7 @@ char *kgCheckFileType(char *name) {
 static void Update1(void *Tmp) {
 	    void **th;
 	    void *bs=NULL;
-	    bs=kgOpenBusy(Tmp,500,250);
+	    bs=kgOpenBusy(Tmp,600,250);
 	    kgSetString(T1,0,Folder1);
 	    th = (void **)kgGetList(X1);
 	    if(th != NULL) kgFreeThumbNails((ThumbNail **)th);
@@ -556,6 +636,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
   void *bs=NULL;
   int sid,did;
   int same=0;
+  int positem;
   if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
   if(strcmp(Folder2,"/") !=0) strcpy(Dir2,Folder2);
   sid = kgGetWidgetId(Tmp,fw);
@@ -569,7 +650,11 @@ static int DragItem(void *Tmp,void *fw,int item) {
      tw = (DIT *)kgGetLocationWidget(Tmp,x,y);
      if(tw != NULL) {
                did = kgGetWidgetId(Tmp,tw);
-	       if(sid == did ) return 0;
+	       if(sid == did ) {
+		       positem = kgGetThumbNailItem(fw,x,y);
+		       if( item != positem ) return 1;
+		       return 0;
+	       }
                des = kgGetWidgetName(Tmp,did);
                if( (strcmp(des,"Xbox1")==0)||(strcmp(des,"Ybox1")==0)) ddir=Folder1;
                if( (strcmp(des,"Xbox2")==0)||(strcmp(des,"Ybox2")==0)) ddir=Folder2;
@@ -596,10 +681,22 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       ThumbNail *th;
 		       char *ret1;
 		       th = kgGetThumbNail(fw,item);
-		       sprintf(job,"mv %-s/%-s %s",sdir,th->name,Trash);
+		       sprintf(job,"%-s/%-s",Trash,th->name);
+		       if( kgCheckFileType(job) != NULL) {
+                         if(kgCheckMenu(Tmp,400,400,"Do you want to overwrite",0)){
+		            sprintf(job,"bash -c \"mv -f %-s/%-s/* -t %-s/%-s\"",sdir,th->name,Trash,th->name);
+			 }
+			 else {
+		            sprintf(job,"bash -c \"mv -n %-s/%-s/* -t %s/%-s\"",sdir,th->name,Trash,th->name);
+			 }
+		       }
+		       else sprintf(job,"mv %-s/%-s -t %s",sdir,th->name,Trash);
+//		       printf("%s\n",job);
                        bs = kgOpenBusy(Tmp,600,250);
 		       kgRunJob(job,NULL);
                        kgCloseBusy(bs);
+		       sprintf(job,"rm -rf %-s/%-s",sdir,th->name);
+		       kgRunJob(job,NULL);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
 		       if((ret1=kgCheckFileType(job))== NULL) {
 		         th = kgPickThumbNail(fw,item);
@@ -620,12 +717,33 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       char flname[300];
 		       char *ret,*ret1;
 		       th = kgGetThumbNail(fw,item);
+		       sprintf(job,"%-s/%-s",ddir,th->name);
+		       if( (ret=kgCheckFileType(job)) != NULL) {
+                         if(kgCheckMenu(Tmp,400,400,"Do you want to overwrite",0)){
+		            sprintf(job,"bash -c \"mv -f %-s/%-s/* -t %-s/%-s\"",sdir,th->name,ddir,th->name);
+			    printf("%s\n",job);
+
+			 }
+			 else {
+		            sprintf(job,"bash -c \"mv -n %-s/%-s/* -t %s/%-s\"",sdir,th->name,ddir,th->name);
+			 }
+		       }
+		       else sprintf(job,"mv %-s/%-s -t %s",sdir,th->name,ddir);
 		       sprintf(flname,"%-s/%-s",sdir,th->name);
 		       ret=kgCheckFileType(flname);
+#if 0
 		       sprintf(job,"mv %-s/%-s %s",sdir,th->name,ddir);
+#endif
                        bs = kgOpenBusy(Tmp,600,250);
-		       kgRunJob(job,NULL);
+	     	       printf("%s\n",job);
+#if 1
+		       kgRunJob(job,NULL); // need bash since '*'
+#else
+		       system(job);
+#endif
 		       kgCloseBusy(bs);
+		       sprintf(job,"rm -rf %-s/%-s",sdir,th->name);
+		       kgRunJob(job,NULL);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
 		       if((ret1=kgCheckFileType(job))== NULL) {
 		         th = kgPickThumbNail(fw,item);
@@ -654,47 +772,56 @@ static int DragItem(void *Tmp,void *fw,int item) {
 //	       printf("%s | %s\n",src,des);
 	       if( (strcmp(src,"Xbox1")==0) &&(strcmp(des,"Xbox2")==0)) {
 		 if(same) return 1;
-                 if(kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0)){ 
-                 sprintf(job,"cp -rv  %-s/%-s %-s",
+		 sprintf(job,"%-s/%-s",Folder2,kgGetThumbNailName(fw,item));
+		 if(kgCheckFileType(job)!= NULL) {
+                   if(!kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0))return 1;
+		 }
+                 sprintf(job,"cp -rvf  %-s/%-s %-s",
 			 Dir1,kgGetThumbNailName(fw,item),Folder2);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder2,kgGetThumbNailName(fw,item));
 		         goto jump;
-		 }
 		 return 1;
 	       }
 	       if( (strcmp(src,"Ybox1")==0) &&(strcmp(des,"Ybox2")==0)) {
 		 if(same) return 1;
-                 if(kgCheckMenu(Tmp,400,400,"Copy File;may overwrite",0)){ 
-                 sprintf(job,"cp -rv %-s/%-s %-s",
+//                 if(kgCheckMenu(Tmp,400,400,"Copy File;may overwrite",0)){ 
+		 sprintf(job,"%-s/%-s",Folder2,kgGetThumbNailName(fw,item));
+		 if(kgCheckFileType(job)!= NULL) {
+                   if(!kgCheckMenu(Tmp,400,400,"Copy File;may overwrite",0))return 1;
+		 }
+                 sprintf(job,"cp -rfv %-s/%-s %-s",
 			 Dir1,kgGetThumbNailName(fw,item),Folder2);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder2,kgGetThumbNailName(fw,item));
 		         goto jump;
-		 }
 		 return 1;
 	       }
 	       if( (strcmp(src,"Xbox2")==0) &&(strcmp(des,"Xbox1")==0)) {
    	         void *bs;
 		 if(same) return 1;
-                 if(kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0)){ 
-                 sprintf(job,"cp -rv %-s/%-s %-s",
+		 sprintf(job,"%-s/%-s",Folder1,kgGetThumbNailName(fw,item));
+		 if(kgCheckFileType(job)!= NULL) {
+                   if(!kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0))return 1;
+		 }
+                 sprintf(job,"cp -rfv %-s/%-s %-s",
 			 Dir2,kgGetThumbNailName(fw,item),Folder1);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder1,kgGetThumbNailName(fw,item));
 		         goto jump;
-		 }
 		 return 1;
 	       }
 	       if( (strcmp(src,"Ybox2")==0) &&(strcmp(des,"Ybox1")==0)) {
 		 if(same) return 1;
-                 if(kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0)){ 
-                 sprintf(job,"cp -r %-s/%-s %-s",
+		 sprintf(job,"%-s/%-s",Folder1,kgGetThumbNailName(fw,item));
+		 if(kgCheckFileType(job)!= NULL) {
+                   if(!kgCheckMenu(Tmp,400,400,"Copy File;may overwrite",0))return 1;
+		 }
+                 sprintf(job,"cp -rfv %-s/%-s %-s",
 			 Dir2,kgGetThumbNailName(fw,item),Folder1);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder1,kgGetThumbNailName(fw,item));
 		         goto jump;
-		 }
 		 return 1;
 	       }
 	       return 1;
@@ -726,15 +853,17 @@ static int CopyItems(void *Tmp,void *fw) {
   ThumbNail **th;
   FY = (DIY *)fw;
   int x=-1,y=-1;
+  int Pip1[2],Pip2[2],*Pips=NULL;
   void *tw=NULL;
   char *src,*des;
-  char job[500];
+  char job[500],Msg[200];
   char Dir1[200]="",Dir2[200]="";
   char destloc[500];
   char *sdir,*ddir;;
   char *fret=NULL;
   int sid,did;
   int same=0;
+  void *bs;
   if(!kgCheckMenu(Tmp,400,400,"Copy Selected",0)) return 0;
   if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
   if(strcmp(Folder2,"/") !=0) strcpy(Dir2,Folder2);
@@ -746,22 +875,44 @@ static int CopyItems(void *Tmp,void *fw) {
   if(strcmp(Folder1,Folder2)==0) same=1;
   if(same) return 0;
   th = (ThumbNail **)kgGetList(fw);
+  bs = kgOpenBusy(Tmp,700,250);
   if(th != NULL) {
     i =0;
+#if 0
+    if( pipe(Pip1) < 0) return 0;
+    if( pipe(Pip2) < 0) return 0;
+    if(fork()==0) {
+            close(Pip2[0]);
+            close(Pip1[1]);
+	    MonitorProgress(Pip1[0],Pip2[1],0);
+            close(Pip2[1]);
+            close(Pip1[0]);
+	    exit(0);
+    }
+    close(Pip2[1]);
+    close(Pip1[0]);
+#endif
+    Pips=    MonitorProgress(NULL,0);
+    if(Pips==NULL) return 0;
     while(th[i]!= NULL) {
       if(kgGetSwitch(fw,i)) {
         sprintf(job,"cp %-s/%-s %-s",sdir,th[i]->name,ddir);
+	sprintf(Msg,"%-s\n",th[i]->name);
+	write(Pips[1],Msg,strlen(Msg));
         kgRunJob(job,NULL);
 	sprintf(destloc,"%-s/%-s",ddir,th[i]->name);
         if(kgCheckFileType(destloc)!=NULL)  {
           kgAddThumbNail(tw,kgCopyThumbNail(th[i]),0);
 	}
       }
+      if(GetLine(Pips[0],Msg)) break;
       i++;
     }
+    CloseMonitor(Pips);
   }
   kgSortList(tw);
   kgListRemoveDup(tw);
+  kgCloseBusy(bs);
   kgUpdateWidget(tw);
   kgUpdateOn(Tmp);
   return 1;
@@ -771,16 +922,18 @@ static int MoveItems(void *Tmp,void *fw) {
   int item=0,i=0;
   ThumbNail **th,*thitem=NULL;
   FY = (DIY *)fw;
+  int *Pips=NULL;
   int x=-1,y=-1;
   void *tw=NULL;
   char *src,*des;
   char job[500];
   char Dir1[200]="",Dir2[200]="";
-  char destloc[500];
+  char destloc[500],Msg[200];
   char *sdir,*ddir;;
   char *fret=NULL;
   int sid,did;
   int same=0;
+  void *bs;
   if(!kgCheckMenu(Tmp,400,400,"Move Selected",0)) return 0;
   if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
   if(strcmp(Folder2,"/") !=0) strcpy(Dir2,Folder2);
@@ -792,11 +945,16 @@ static int MoveItems(void *Tmp,void *fw) {
   if(strcmp(Folder1,Folder2)==0) same=1;
   if(same) return 0;
   th = (ThumbNail **)kgGetList(fw);
+  bs = kgOpenBusy(Tmp,700,250);
   if(th != NULL) {
+    Pips = MonitorProgress(NULL,0);
+    if(Pips == NULL) return 0;
     i =0;
     while(th[i]!= NULL) {
       if(kgGetSwitch(fw,i)) {
         sprintf(job,"mv %-s/%-s %-s",sdir,th[i]->name,ddir);
+	sprintf(Msg,"%-s\n",th[i]->name);
+	write(Pips[1],Msg,strlen(Msg));
         kgRunJob(job,NULL);
 	sprintf(destloc,"%-s/%-s",ddir,th[i]->name);
         if(kgCheckFileType(destloc)!=NULL)  {
@@ -806,11 +964,14 @@ static int MoveItems(void *Tmp,void *fw) {
 	  continue;
 	}
       }
+      if(GetLine(Pips[0],Msg)) break;
       i++;
     }
+    CloseMonitor(Pips);
   }
   kgSortList(tw);
   kgListRemoveDup(tw);
+  kgCloseBusy(bs);
   kgUpdateWidget(tw);
   kgUpdateWidget(fw);
   kgUpdateOn(Tmp);
@@ -831,6 +992,7 @@ static int RemoveItems(void *Tmp,void *fw) {
   char *fret=NULL;
   int sid,did;
   int same=0;
+  void *bs;
   if(!kgCheckMenu(Tmp,400,400,"Remove Selected",0)) return 0;
   if(strcmp(Folder1,"/") !=0) strcpy(Dir1,Folder1);
   if(strcmp(Folder2,"/") !=0) strcpy(Dir2,Folder2);
@@ -851,6 +1013,7 @@ static int RemoveItems(void *Tmp,void *fw) {
   if(strcmp(Folder1,Folder2)==0) {
 	  same=1;
   }
+  bs = kgOpenBusy(Tmp,700,250);
   th = (ThumbNail **)kgGetList(fw);
   if(th != NULL) {
     i =0;
@@ -872,6 +1035,7 @@ static int RemoveItems(void *Tmp,void *fw) {
   }
   kgSortList(tw);
   kgListRemoveDup(tw);
+  kgCloseBusy(bs);
   kgUpdateWidget(tw);
   kgUpdateWidget(fw);
   if(same) kgUpdateWidget(ow);
