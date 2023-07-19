@@ -272,17 +272,16 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn10[0].xpmn=NULL;
   butn10[0].xpmp=NULL;
   butn10[0].xpmh=NULL;
-#if 1
+#if 0
   butn10[0].xpmn= (char *)malloc(100); 
   strcpy(butn10[0].xpmn,(char *)"##/usr/share/icons/CratOS_lion-icons/apps/scalable/gnome-fs-trash-empty.png");
 #else
-  butn10[0].xpmn= kgGetProcessedImage("##/usr/share/icons/CratOS_lion-icons/apps/scalable/gnome-fs-trash-empty.png",72,0.8,0,0,0);
+  char *xpm10=   (char *)&empty_str;
+  butn10[0].xpmn= xpm10;
 #endif
-#if 1
+#if 0
   butn10[0].xpmp= (char *)malloc(100); 
   strcpy(butn10[0].xpmp,(char *)"##/usr/share/icons/CratOS_lion-icons/apps/scalable/clanbomber.png");
-#else
-  butn10[0].xpmp= kgGetProcessedImage("##/usr/share/icons/CratOS_lion-icons/apps/scalable/clanbomber.png",72,0.8,0,0,0);
 #endif
   butn10[0].bkgr=-1;
   butn10[0].butncode='';
