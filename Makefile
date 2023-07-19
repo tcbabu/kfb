@@ -2,7 +2,7 @@ KULINA=/usr
 #CC	=g++ -pthread
 CC	=cc -pthread
 kgfilebrowser	: kgfilebrowser.o kgfilebrowserCallbacks.o kgfilebrowsermain.o kgPopUp.o infobox.o statbox.o
-	 $(CC) -o kgfilebrowser kgfilebrowser.o kgfilebrowserCallbacks.o kgfilebrowsermain.o kgPopUp.o infobox.o statbox.o -I$(KULINA)/include $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread -lz -lbz2 -lGL
+	 $(CC) -o kgfilebrowser kgfilebrowser.o kgfilebrowserCallbacks.o kgfilebrowsermain.o kgPopUp.o infobox.o statbox.o -I$(KULINA)/include $(KULINA)/lib/libkulina.a $(KULINA)/lib/libgm.a -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread 
 	 rm -f kfbilebrowser.tgz
 	 cp kgfilebrowser TARBALL/
 	 tar czf kgfilebrowser.tgz TARBALL
