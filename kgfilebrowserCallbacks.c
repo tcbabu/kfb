@@ -96,7 +96,7 @@ char *FMenu1[5]={"Rename this","Backup this","Create Link in Other","Info",NULL}
   strcat(job,"%30s"); \
   strcpy(to,Th->name); \
   gscanf(Tmp,job,to); \
-  sprintf(job,"rename %-s %-s %-s",Th->name,to,fname); \
+  sprintf(job,"rename \\%-s\\ \\%-s\\ \\%-s\\",Th->name,to,fname); \
   kgRunJob(job,NULL); \
   sprintf(fname,"%-s/%-s",Folder,to); \
   if(kgCheckFileType(fname)!= NULL) { \
@@ -134,7 +134,7 @@ char *FMenu1[5]={"Rename this","Backup this","Create Link in Other","Info",NULL}
   strcat(to,".bak");\
   gscanf(Tmp,job,to); \
   if(kgCheckMenu(Tmp,400,400,"Make Backup",0)){ \
-  sprintf(job,"cp -rf  %-s/%-s %-s/%-s ",Folder,from,Folder,to); \
+  sprintf(job,"cp -rf  \\%-s/%-s\\ \\%-s/%-s\\",Folder,from,Folder,to); \
   sprintf(fname,"%-s/%-s",Folder,to); \
   if( kgCheckFileType(fname) != NULL) exist=1;\
   bs = kgOpenBusy(Tmp,600,250);\
@@ -181,7 +181,7 @@ char *FMenu1[5]={"Rename this","Backup this","Create Link in Other","Info",NULL}
   strcat(job,"%30s"); \
   sprintf(to,"NewFolder%3.3d",count);\
   gscanf(Tmp,job,to); \
-  sprintf(job,"mkdir   %-s/%-s",Folder,to); \
+  sprintf(job,"mkdir   \\%-s/%-s\\",Folder,to); \
   sprintf(fname,"%-s/%-s",Folder,to); \
   if( kgCheckFileType(fname) != NULL) exist=1;\
   kgRunJob(job,NULL);\
@@ -288,9 +288,11 @@ char *FMenu1[5]={"Rename this","Backup this","Create Link in Other","Info",NULL}
 }
 #define ProcessInfo(Folder) { \
 	strcpy(job,"stat ");\
+	strcat(job,"\\");\
 	strcat(job,Folder);\
 	strcat(job,"/");\
 	strcat(job,Th->name);\
+	strcat(job,"\\");\
 	kgRunJob(job,ProcessStatData);\
 }
 
@@ -566,7 +568,7 @@ static int CreateLink(char *src,char *des){
 	*dpt='\0';
 	dpt++;
 	if(strcmp(src,des)==0) {
-		sprintf(job,"ln -sf %-s %-s/%-s",spt,des,dpt);
+		sprintf(job,"ln -sf \\%-s\\ \\%-s/%-s\\",spt,des,dpt);
 //		system(job);
 		kgRunJob(job,NULL);
 		return 1;
@@ -575,7 +577,7 @@ static int CreateLink(char *src,char *des){
 	if (pt!= NULL) { // destination is a top directory/self
 		pt += strlen(des);
 		if(*pt=='/')pt++;
-		sprintf(job,"ln -sf ./%-s/%-s %-s/%-s",pt,spt,des,dpt);
+		sprintf(job,"ln -sf \\./%-s/%-s\\ \\%-s/%-s\\",pt,spt,des,dpt);
 //		system(job);
 		kgRunJob(job,NULL);
 		return 1;
@@ -590,11 +592,11 @@ static int CreateLink(char *src,char *des){
 			if(*pt=='\0') break;
 			n++;
 		}
-		strcpy(job,"ln -sf ../");
+		strcpy(job,"ln -sf \\../");
 		i=0;
 		while(i< n) {i++;strcat(job,"../");}
 		pt= job + strlen(job);
-		sprintf(pt,"%-s %-s/%s",spt,des,dpt);
+		sprintf(pt,"%-s\\ \\%-s/%s\\",spt,des,dpt);
 		kgRunJob(job,NULL);
                 return 1;
 	}
@@ -620,12 +622,12 @@ static int CreateLink(char *src,char *des){
 
 	}
 	if(n==0) {
-	   sprintf(job,"ln -sf %-s/%-s %-s/%-s",src,spt,des,dpt);
+	   sprintf(job,"ln -sf \\%-s/%-s\\ \\%-s/%-s\\",src,spt,des,dpt);
 	   kgRunJob(job,NULL);
            return 1;
 	}
 	else { // that is, some parts of paths are matching
-	  strcpy(job,"ln -sf ../");
+	  strcpy(job,"ln -sf \\../");
 	  n =0;
 	  pt =des;
 	  while( (pt=strstr(pt,"/"))!= NULL) {
@@ -635,7 +637,7 @@ static int CreateLink(char *src,char *des){
 			n++;
           }
           pt= job + strlen(job);
-	  sprintf(pt,"%-s/%-s %s",src,spt,target);
+	  sprintf(pt,"%-s/%-s\\ \\%s\\",src,spt,target);
 	  kgRunJob(job,NULL);
           return 1;
 	}
@@ -786,7 +788,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       ThumbNail *th;
 		       char *ret1;
 		       th = kgGetThumbNail(fw,item);
-		       sprintf(job,"rm -rf %-s/%-s",sdir,th->name);
+		       sprintf(job,"rm -rf \\%-s/%-s\\",sdir,th->name);
                        bs = kgOpenBusy(Tmp,600,250);
 		       kgRunJob(job,NULL);
                        kgCloseBusy(bs);
@@ -807,18 +809,18 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       sprintf(job,"%-s/%-s",Trash,th->name);
 		       if( kgCheckFileType(job) != NULL) {
                          if(kgCheckMenu(Tmp,400,400,"Do you want to overwrite",0)){
-		            sprintf(job,"bash -c \"mv -f %-s/%-s/* -t %-s/%-s\"",sdir,th->name,Trash,th->name);
+		            sprintf(job,"bash -c \\mv -f \"%-s/%-s/*\" -t \"%-s/%-s\"\\",sdir,th->name,Trash,th->name);
 			 }
 			 else {
-		            sprintf(job,"bash -c \"mv -n %-s/%-s/* -t %s/%-s\"",sdir,th->name,Trash,th->name);
+		            sprintf(job,"bash -c \\mv -n \"%-s/%-s/*\" -t \"%s/%-s\"\\",sdir,th->name,Trash,th->name);
 			 }
 		       }
-		       else sprintf(job,"mv %-s/%-s -t %s",sdir,th->name,Trash);
+		       else sprintf(job,"mv \\%-s/%-s\\ -t \\%s\\",sdir,th->name,Trash);
 //		       printf("%s\n",job);
                        bs = kgOpenBusy(Tmp,600,250);
 		       kgRunJob(job,NULL);
                        kgCloseBusy(bs);
-		       sprintf(job,"rm -rf %-s/%-s",sdir,th->name);
+		       sprintf(job,"rm -rf \\%-s/%-s\\",sdir,th->name);
 		       kgRunJob(job,NULL);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
 		       if((ret1=kgCheckFileType(job))== NULL) {
@@ -843,15 +845,15 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       sprintf(job,"%-s/%-s",ddir,th->name);
 		       if( (ret=kgCheckFileType(job)) != NULL) {
                          if(kgCheckMenu(Tmp,400,400,"Do you want to overwrite",0)){
-		            sprintf(job,"bash -c \"mv -f %-s/%-s/* -t %-s/%-s\"",sdir,th->name,ddir,th->name);
+		            sprintf(job,"bash -c \\mv -f \"%-s/%-s/*\" -t \"%-s/%-s\"\\",sdir,th->name,ddir,th->name);
 			    printf("%s\n",job);
 
 			 }
 			 else {
-		            sprintf(job,"bash -c \"mv -n %-s/%-s/* -t %s/%-s\"",sdir,th->name,ddir,th->name);
+		            sprintf(job,"bash -c \\mv -n \"%-s/%-s/*\" -t \"%s/%-s\"\\",sdir,th->name,ddir,th->name);
 			 }
 		       }
-		       else sprintf(job,"mv %-s/%-s -t %s",sdir,th->name,ddir);
+		       else sprintf(job,"mv \\%-s/%-s\\ -t \\%s\\",sdir,th->name,ddir);
 		       sprintf(flname,"%-s/%-s",sdir,th->name);
 		       ret=kgCheckFileType(flname);
 #if 0
@@ -865,7 +867,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		       system(job);
 #endif
 		       kgCloseBusy(bs);
-		       sprintf(job,"rm -rf %-s/%-s",sdir,th->name);
+		       sprintf(job,"rm -rf \\%-s/%-s\\",sdir,th->name);
 		       kgRunJob(job,NULL);
 		       sprintf(job,"%-s/%-s",sdir,th->name);
 		       if((ret1=kgCheckFileType(job))== NULL) {
@@ -899,7 +901,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		 if(kgCheckFileType(job)!= NULL) {
                    if(!kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0))return 1;
 		 }
-                 sprintf(job,"cp -rvf  %-s/%-s %-s",
+                 sprintf(job,"cp -rvf  \\%-s/%-s\\ \\%-s\\",
 			 Dir1,kgGetThumbNailName(fw,item),Folder2);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder2,kgGetThumbNailName(fw,item));
@@ -913,7 +915,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		 if(kgCheckFileType(job)!= NULL) {
                    if(!kgCheckMenu(Tmp,400,400,"Copy File;may overwrite",0))return 1;
 		 }
-                 sprintf(job,"cp -rfv %-s/%-s %-s",
+                 sprintf(job,"cp -rfv \\%-s/%-s\\ \\%-s\\",
 			 Dir1,kgGetThumbNailName(fw,item),Folder2);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder2,kgGetThumbNailName(fw,item));
@@ -927,7 +929,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		 if(kgCheckFileType(job)!= NULL) {
                    if(!kgCheckMenu(Tmp,400,400,"Copy Folder;may overwrite",0))return 1;
 		 }
-                 sprintf(job,"cp -rfv %-s/%-s %-s",
+                 sprintf(job,"cp -rfv \\%-s/%-s\\ \\%-s\\",
 			 Dir2,kgGetThumbNailName(fw,item),Folder1);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder1,kgGetThumbNailName(fw,item));
@@ -940,7 +942,7 @@ static int DragItem(void *Tmp,void *fw,int item) {
 		 if(kgCheckFileType(job)!= NULL) {
                    if(!kgCheckMenu(Tmp,400,400,"Copy File;may overwrite",0))return 1;
 		 }
-                 sprintf(job,"cp -rfv %-s/%-s %-s",
+                 sprintf(job,"cp -rfv \\%-s/%-s\\ \\%-s\\",
 			 Dir2,kgGetThumbNailName(fw,item),Folder1);
 		 sprintf(destloc,"%-s/%-s",
 			 Folder1,kgGetThumbNailName(fw,item));
@@ -1019,7 +1021,7 @@ static int CopyItems(void *Tmp,void *fw) {
     if(Pips==NULL) return 0;
     while(th[i]!= NULL) {
       if(kgGetSwitch(fw,i)) {
-        sprintf(job,"cp %-s/%-s %-s",sdir,th[i]->name,ddir);
+        sprintf(job,"cp \\%-s/%-s\\ \\%-s\\",sdir,th[i]->name,ddir);
 	sprintf(Msg,"%-s\n",th[i]->name);
 	write(Pips[1],Msg,strlen(Msg));
         kgRunJob(job,NULL);
@@ -1075,7 +1077,7 @@ static int MoveItems(void *Tmp,void *fw) {
     i =0;
     while(th[i]!= NULL) {
       if(kgGetSwitch(fw,i)) {
-        sprintf(job,"mv %-s/%-s %-s",sdir,th[i]->name,ddir);
+        sprintf(job,"mv \\%-s/%-s\\ \\%-s\\",sdir,th[i]->name,ddir);
 	sprintf(Msg,"%-s\n",th[i]->name);
 	write(Pips[1],Msg,strlen(Msg));
         kgRunJob(job,NULL);
@@ -1142,7 +1144,7 @@ static int RemoveItems(void *Tmp,void *fw) {
     i =0;
     while(th[i]!= NULL) {
       if(kgGetSwitch(fw,i)) {
-        sprintf(job,"mv %-s/%-s %-s",sdir,th[i]->name,ddir);
+        sprintf(job,"mv \\%-s/%-s\\ \\%-s\\",sdir,th[i]->name,ddir);
         kgRunJob(job,NULL);
 	sprintf(destloc,"%-s/%-s",ddir,th[i]->name);
         if(kgCheckFileType(destloc)!=NULL)  {
@@ -1386,7 +1388,7 @@ int  kgfilebrowserbrowser2callback(int item,int i,void *Tmp) {
      if(wid != NULL) {
 	     if(kgCheckWidgetName(wid,"Ybox2")) {
                char job[400];
-               sprintf(job,"cp %-s/%-s %-s",Folder1,kgGetThumbNailName(Y,item-1),Folder2);
+               sprintf(job,"cp \\%-s/%-s\\ \\%-s\\",Folder1,kgGetThumbNailName(Y,item-1),Folder2);
                printf("%s\n",job);
                kgRunJob(job,NULL);
 	       kgAddThumbNail(Y2,kgCopyThumbNail(kgGetThumbNail(Y,item-1)),0);
