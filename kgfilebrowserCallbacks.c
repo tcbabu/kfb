@@ -1709,8 +1709,12 @@ void  kgfilebrowserbrowser5init(DIY *Y,void *pt) {
  // One may setup browser list here by setting Y->list
  // if it need to be freed set it as Y->pt also
   char buf[300];
+#if 0
   sprintf(buf,"%-s/.Trash",getenv("HOME"));
   mkdir(buf,0700);
+#else
+  sprintf(buf,"/tmp");
+#endif
   sprintf(Trash,"%-s/%-d",buf,getpid());
   mkdir(Trash,0700);
 }
@@ -1724,10 +1728,18 @@ int  kgfilebrowserbutton3callback(int butno,int i,void *Tmp) {
   int n,ret =0; 
   DIY *Y;
   void **list;
+  void *bs=NULL;
+  char job[200];
   D = (DIALOG *)Tmp;
   B = (DIN *)kgGetWidget(Tmp,i);
   n = B->nx*B->ny;
-  rmdir(Trash);
+//  printf("Removing Trash %s\n",Trash);
+//  rmdir(Trash);
+  sprintf(job,"rm -rf %s",Trash);
+//  printf("JOB: %s\n",job);
+  bs = kgOpenBusy(Tmp,600,250);
+  kgRunJob(job,NULL);
+  kgCloseBusy(bs);
   mkdir(Trash,0755);
   list = kgGetList(TR);
   if(list != NULL) kgFreeThumbNails((ThumbNail **)list);
@@ -1748,10 +1760,13 @@ int kgfilebrowsercleanup(void *Tmp) {
     Tmp :  Pointer to DIALOG  
    ***********************************/ 
   int ret = 1;
+  char job[200];
+  void *bs=NULL;
   DIALOG *D;void *pt;
   D = (DIALOG *)Tmp;
   pt = D->pt;
-  rmdir(Trash);
+  sprintf(job,"rm -rf %s",Trash);
+  kgRunJob(job,NULL);
   return ret;
 }
 int Modifykgfilebrowser(void *Tmp,int GrpId) {

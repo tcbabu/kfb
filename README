@@ -3,8 +3,12 @@ Kulina File Browser
 File Browser for LINUX using Kulina Graphics Library and GUI tool kit.
 There are many file browsers, stilli... One may try this.
 
-This Ver1.5 dated 14th Sept 2023
+Ver1.5 dated 14th Sept 2023
 Bug fix for special chaarecters in file/folder names
+
+Ver1.6 dated 24th Jan 2024
+Trash is created in  /tmp
+Bug fix in Trash cleaning
 
 GOOD LUNK
 
