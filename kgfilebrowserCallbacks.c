@@ -11,6 +11,7 @@ void *Runstatbox(void *parent,void *arg);
 int kgFilterString(char *s, char *fltr);
 
 
+static int folder1stat=0,folder2stat=0;
 static char Folder1[300],Home1[300]="";
 static char Folder2[300],Home2[300]="";
 static char Trash[300];
@@ -294,6 +295,24 @@ char *FMenu1[5]={"Rename this","Backup this","Create Link in Other","Info",NULL}
 	strcat(job,Th->name);\
 	strcat(job,"\\");\
 	kgRunJob(job,ProcessStatData);\
+}
+  
+static int chkfolderstat(char *folder) {
+	FILE *fp;
+	int junk;
+	int ret = -1;
+	char job[500];
+	sprintf(job,"stat -t \"%s\"",folder);
+	fp = popen(job,"r");
+	if (fp != NULL ) {
+		fscanf(fp,"%s%d%d%s%d%d%d%d%d%d%d%d%d",job,&junk,&junk,job,
+				&junk,&junk,&junk,&junk,
+				&junk,&junk,&junk,&junk,
+				&ret);
+
+	}
+//	printf("ret = %d\n",ret);
+	return ret;
 }
 
 static int _check_for_string(char *s,char *chk) {
@@ -724,6 +743,7 @@ static void Update1(void *Tmp) {
 	    kgUpdateWidget(Y1);
 	    kgUpdateWidget(T1);
 	    kgUpdateOn(Tmp);
+	    folder1stat=chkfolderstat(Folder1);
 }
 static void Update2(void *Tmp) {
 	    void **th;
@@ -745,6 +765,7 @@ static void Update2(void *Tmp) {
 	    kgUpdateWidget(Y2);
 	    kgUpdateWidget(T2);
 	    kgUpdateOn(Tmp);
+	    folder2stat=chkfolderstat(Folder2);
 }
 #if 1
 static int DragItem(void *Tmp,void *fw,int item) {
@@ -1919,13 +1940,37 @@ int kgfilebrowserResizeCallBack(void *Tmp) {
   kgRedrawDialog(D);
   return ret;
 }
+
 int kgfilebrowserWaitCallBack(void *Tmp) {
   /*********************************** 
     Tmp :  Pointer to DIALOG  
     Called while waiting for event  
     return value 1 will close the the UI  
    ***********************************/ 
-  int ret = 0;
+  int ret = 0,statval =0;
+  static int count=-1;
+
+  if(folder1stat ==0 )folder1stat=chkfolderstat(Folder1);
+  if(folder2stat ==0 )folder2stat=chkfolderstat(Folder2);
+  
+  count++;
+  if(count==2000) {
+          statval = chkfolderstat(Folder1);
+          if( statval <= 0 ) {
+		  strcpy(Folder1,getenv("HOME"));
+                  statval = chkfolderstat(Folder1);
+		  folder1stat= statval; Update1(Tmp);
+	  }
+	  if(statval > folder1stat) { folder1stat= statval; Update1(Tmp);}
+          statval = chkfolderstat(Folder2);
+          if( statval <= 0 ) {
+		  strcpy(Folder2,getenv("HOME"));
+                  statval = chkfolderstat(Folder2);
+		  folder2stat= statval; Update2(Tmp);
+	  }
+	  if(statval > folder2stat) { folder2stat= statval; Update2(Tmp);}
+	  count=0;
+  }
   return ret;
 }
 int  kgfilebrowserbutton4callback(int butno,int i,void *Tmp) {
