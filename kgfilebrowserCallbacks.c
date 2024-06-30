@@ -1949,7 +1949,7 @@ int kgfilebrowserWaitCallBack(void *Tmp) {
    ***********************************/ 
   int ret = 0,statval =0;
   static int count=-1;
-
+#if 0
   if(folder1stat ==0 )folder1stat=chkfolderstat(Folder1);
   if(folder2stat ==0 )folder2stat=chkfolderstat(Folder2);
   
@@ -1971,6 +1971,7 @@ int kgfilebrowserWaitCallBack(void *Tmp) {
 	  if(statval > folder2stat) { folder2stat= statval; Update2(Tmp);}
 	  count=0;
   }
+#endif
   return ret;
 }
 int  kgfilebrowserbutton4callback(int butno,int i,void *Tmp) {
