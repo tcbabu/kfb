@@ -715,13 +715,13 @@ void *Runkgfilebrowser(void *arg) {
     Text_Box3  1 data values
 
 *************************************************/
-   int   v0 = 1;
-   int   v1 = 1;
-   int   v2 = 1;
-   int   v3 = 1;
+   int   v0 = 0;
+   int   v1 = 0;
+   int   v2 = 0;
+   int   v3 = 0;
    char  v4[500]="" ;
    char  v5[500]="" ;
-   int   v6 = 1;
+   int   v6 = 0;
    char  v7[500]="*" ;
    void* v[8];
    v[0]=(void *)(&v0);
