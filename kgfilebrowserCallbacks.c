@@ -1384,9 +1384,9 @@ void  kgfilebrowserbrowser1init(DIY *X,void *pt) {
     th = (void **)kgFolderThumbNails(Home1);
     SetThumbNailImages((ThumbNail **)th,20);
 #else
-    th = (void **)GetFolderThumbNails(Home1,20);
+//    th = (void **)GetFolderThumbNails(Home1,20);
 #endif
-    kgSetList(X1,th);
+//    kgSetList(X1,th);
     strcpy(Folder1,Home1);
 
 }
@@ -1440,8 +1440,8 @@ void  kgfilebrowserbrowser2init(DIY *Y,void *pt) {
 //    strcpy(Home1,getenv("HOME"));
     if(Home1[0]=='\0') getcwd(Home1,299);
     strcpy(Folder1,Home1);
-    list = (void **)GetFileThumbNails(Home1,48);
-    kgSetList(Y1,list);
+ //   list = (void **)GetFileThumbNails(Home1,48);
+ //   kgSetList(Y1,list);
 }
 int  kgfilebrowsersplbutton1callback(int butno,int i,void *Tmp) {
   /*********************************** 
@@ -1495,9 +1495,11 @@ void  kgfilebrowserbrowser3init(DIY *X,void *pt) {
     strcpy(Home2,getenv("HOME"));
 //    kgSetList(X2,(void **)kgFolderThumbNails(Home2));
 //    th = (void **)kgFolderThumbNails(Home2);
+#if 0
     th = (void **)GetFolderThumbNails(Home2,20);
     kgSetList(X2,th);
     strcpy(Folder2,Home2);
+#endif
 }
 int  kgfilebrowserbrowser4callback(int item,int i,void *Tmp) {
   DIALOG *D;DIY *Y;void *pt; 
@@ -1548,8 +1550,8 @@ void  kgfilebrowserbrowser4init(DIY *Y,void *pt) {
     Y2 = Y;
     strcpy(Home2,getenv("HOME"));
     strcpy(Folder2,Home2);
-    list = (void **)GetFileThumbNails(Home2,48);
-    kgSetList(Y2,list);
+//    list = (void **)GetFileThumbNails(Home2,48);
+//    kgSetList(Y2,list);
 }
 int  kgfilebrowserbutton1callback(int butno,int i,void *Tmp) {
   /*********************************** 
@@ -1679,6 +1681,7 @@ int kgfilebrowserinit(void *Tmp) {
   int ret = 1;
   DIALOG *D;void *pt;
   D = (DIALOG *)Tmp;
+  void **th;
   Dtmp = Tmp;
   pt = D->pt;
   T1 = (DIT *)kgGetNamedWidget(Tmp,"Tbox1");
@@ -1697,15 +1700,24 @@ int kgfilebrowserinit(void *Tmp) {
   Y1 = (DIY *)kgGetNamedWidget(Tmp,"Ybox1");
   Y2 = (DIY *)kgGetNamedWidget(Tmp,"Ybox2");
   TR = (DIY *)kgGetNamedWidget(Tmp,"Trash");
-//  kgSetList(X1,(void **)kgFolderThumbNails(Home1));
-//  kgSetList(X2,(void **)kgFolderThumbNails(Home2));
-//  kgSetList(Y1,(void **)kgFileThumbNails(Home1,"*"));
-//  kgSetList(Y2,(void **)kgFileThumbNails(Home2,"*"));
   kgSetString(T1,0,Home1);
   kgSetString(T2,0,Home2);
   kgUpdateWidget(T1);
   kgUpdateWidget(T2);
-//  kgUpdateOn(Tmp);
+  kgUpdateOn(Tmp);
+    th = (void **)GetFolderThumbNails(Home1,20);
+    kgSetList(X1,th);
+    kgUpdateWidget(X1);
+    th  = (void **)GetFileThumbNails(Home1,48);
+    kgSetList(Y1,th);
+    kgUpdateWidget(Y1);
+    th = (void **)GetFolderThumbNails(Home2,20);
+    kgSetList(X2,th);
+    kgUpdateWidget(X2);
+    th  = (void **)GetFileThumbNails(Home2,48);
+    kgSetList(Y2,th);
+    kgUpdateWidget(Y2);
+    kgUpdateOn(Tmp);
   return ret;
 }
 int  kgfilebrowserbrowser5callback(int item,int i,void *Tmp) {

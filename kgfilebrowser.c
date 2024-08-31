@@ -71,7 +71,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
 #endif
 #endif
   butn2[0].bkgr=-1;
-  butn2[0].butncode='';
+  butn2[0].butncode=127;
   DIL h2 = { 
     'h',
     1396,42,  
@@ -142,14 +142,14 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn5[0].xpmp=NULL;
   butn5[0].xpmh=NULL;
   butn5[0].bkgr=-1;
-  butn5[0].butncode='';
+  butn5[0].butncode=127;
   butn5[1].sw=1;
   strcpy(butn5[1].title,(char *)"");
   butn5[1].xpmn=kgUpdirImage(22,R,G,B);
   butn5[1].xpmp=NULL;
   butn5[1].xpmh=NULL;
   butn5[1].bkgr=-1;
-  butn5[1].butncode='';
+  butn5[1].butncode=127;
   DIN b5 = { 
     'n',
     13,11,  
@@ -196,14 +196,14 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn7[0].xpmp=NULL;
   butn7[0].xpmh=NULL;
   butn7[0].bkgr=-1;
-  butn7[0].butncode='';
+  butn7[0].butncode=127;
   butn7[1].sw=1;
   strcpy(butn7[1].title,(char *)"");
   butn7[1].xpmn=kgUpdirImage(22,R,G,B);
   butn7[1].xpmp=NULL;
   butn7[1].xpmh=NULL;
   butn7[1].bkgr=-1;
-  butn7[1].butncode='';
+  butn7[1].butncode=127;
   DIN b7 = { 
     'n',
     1301,9,  
@@ -284,7 +284,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   strcpy(butn10[0].xpmp,(char *)"##/usr/share/icons/CratOS_lion-icons/apps/scalable/clanbomber.png");
 #endif
   butn10[0].bkgr=-1;
-  butn10[0].butncode='';
+  butn10[0].butncode=127;
   DIN b10 = { 
     'n',
     32,617,  
@@ -320,7 +320,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn12[0].xpmp=NULL;
   butn12[0].xpmh=NULL;
   butn12[0].bkgr=-1;
-  butn12[0].butncode='';
+  butn12[0].butncode=127;
   DIN b12 = { 
     'n',
     3,61,  
@@ -329,7 +329,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
     80, 
     30, 
     1,1, 
-    5,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    1,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn12, 
     kgfilebrowserbutton4callback, /*  Callbak */
@@ -345,7 +345,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn13[0].xpmp=NULL;
   butn13[0].xpmh=NULL;
   butn13[0].bkgr=-1;
-  butn13[0].butncode='';
+  butn13[0].butncode=127;
   DIN b13 = { 
     'n',
     1266,62,  
@@ -354,7 +354,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
     80, 
     30, 
     1,1, 
-    5,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    1,0.150000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn13, 
     kgfilebrowserbutton5callback, /*  Callbak */
@@ -370,35 +370,35 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn14[0].xpmp=NULL;
   butn14[0].xpmh=NULL;
   butn14[0].bkgr=-1;
-  butn14[0].butncode='';
+  butn14[0].butncode=127;
   butn14[1].sw=1;
   strcpy(butn14[1].title,(char *)"Clear");
   butn14[1].xpmn=NULL;
   butn14[1].xpmp=NULL;
   butn14[1].xpmh=NULL;
   butn14[1].bkgr=-1;
-  butn14[1].butncode='';
+  butn14[1].butncode=127;
   butn14[2].sw=1;
   strcpy(butn14[2].title,(char *)"Copy selected");
   butn14[2].xpmn=NULL;
   butn14[2].xpmp=NULL;
   butn14[2].xpmh=NULL;
   butn14[2].bkgr=-1;
-  butn14[2].butncode='';
+  butn14[2].butncode=127;
   butn14[3].sw=1;
   strcpy(butn14[3].title,(char *)"Move selected");
   butn14[3].xpmn=NULL;
   butn14[3].xpmp=NULL;
   butn14[3].xpmh=NULL;
   butn14[3].bkgr=-1;
-  butn14[3].butncode='';
+  butn14[3].butncode=127;
   butn14[4].sw=1;
   strcpy(butn14[4].title,(char *)"To trash selected");
   butn14[4].xpmn=NULL;
   butn14[4].xpmp=NULL;
   butn14[4].xpmh=NULL;
   butn14[4].bkgr=-1;
-  butn14[4].butncode='';
+  butn14[4].butncode=127;
   DIN b14 = { 
     'n',
     191,62,  
@@ -407,7 +407,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
     90, 
     30, 
     5,1, 
-    5,0.250000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    1,0.250000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn14, 
     kgfilebrowserbutton6callback, /*  Callbak */
@@ -423,35 +423,35 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
   butn15[0].xpmp=NULL;
   butn15[0].xpmh=NULL;
   butn15[0].bkgr=-1;
-  butn15[0].butncode='';
+  butn15[0].butncode=127;
   butn15[1].sw=1;
   strcpy(butn15[1].title,(char *)"Clear");
   butn15[1].xpmn=NULL;
   butn15[1].xpmp=NULL;
   butn15[1].xpmh=NULL;
   butn15[1].bkgr=-1;
-  butn15[1].butncode='';
+  butn15[1].butncode=127;
   butn15[2].sw=1;
   strcpy(butn15[2].title,(char *)"Copy selected");
   butn15[2].xpmn=NULL;
   butn15[2].xpmp=NULL;
   butn15[2].xpmh=NULL;
   butn15[2].bkgr=-1;
-  butn15[2].butncode='';
+  butn15[2].butncode=127;
   butn15[3].sw=1;
   strcpy(butn15[3].title,(char *)"Move selected");
   butn15[3].xpmn=NULL;
   butn15[3].xpmp=NULL;
   butn15[3].xpmh=NULL;
   butn15[3].bkgr=-1;
-  butn15[3].butncode='';
+  butn15[3].butncode=127;
   butn15[4].sw=1;
   strcpy(butn15[4].title,(char *)"To trash selected");
   butn15[4].xpmn=NULL;
   butn15[4].xpmp=NULL;
   butn15[4].xpmh=NULL;
   butn15[4].bkgr=-1;
-  butn15[4].butncode='';
+  butn15[4].butncode=127;
   DIN b15 = { 
     'n',
     738,62,  
@@ -460,7 +460,7 @@ int kgfilebrowserGroup( DIALOG *D,void **v,void *pt) {
     90, 
     30, 
     5,1, 
-    5,0.250000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
+    1,0.250000,0,0,0,1, /* button type and roundinfg factor(0-0.5),bordr,hide ,nodrawbkgr*/
  
     butn15, 
     kgfilebrowserbutton7callback, /*  Callbak */
